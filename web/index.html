@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Reims Polar — Planner 2026</title>
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+</head>
+
+
+<body>
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+    <header class="site-header">
+
+        <div class="header-inner">
+
+            <div class="brand">
+
+                <span class="brand-small">
+                    REIMS POLAR
+                </span>
+
+                <h1>
+                    PLANNER
+                </h1>
+
+                <span class="brand-year">
+                    2026
+                </span>
+
+            </div>
+
+
+            <div class="header-stats">
+
+                <div class="stat">
+
+                    <strong id="selected-count">
+                        0
+                    </strong>
+
+                    <span>
+                        films sélectionnés
+                    </span>
+
+                </div>
+
+
+                <div class="stat">
+
+                    <strong id="session-count">
+                        0
+                    </strong>
+
+                    <span>
+                        séances
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+
+    <!-- =====================================================
+         NAVIGATION
+    ====================================================== -->
+
+    <nav class="main-nav">
+
+        <button
+            class="nav-button active"
+            data-view="catalogue"
+        >
+            Catalogue
+        </button>
+
+        <button
+            class="nav-button"
+            data-view="planning"
+        >
+            Mon planning
+        </button>
+
+    </nav>
+
+
+
+    <!-- =====================================================
+         CONTENU PRINCIPAL
+    ====================================================== -->
+
+    <main class="main-container">
+
+
+        <!-- =================================================
+             VUE CATALOGUE
+        ================================================== -->
+
+        <section
+            id="catalogue-view"
+            class="view active"
+        >
+
+            <div class="page-heading">
+
+                <div>
+
+                    <span class="eyebrow">
+                        PROGRAMME 2026
+                    </span>
+
+                    <h2>
+                        Sélectionner les films
+                    </h2>
+
+                    <p>
+                        Choisissez les films qui vous intéressent.
+                        Le planner organisera ensuite leurs séances.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- Recherche + filtres -->
+
+            <div class="filters-panel">
+
+                <div class="search-container">
+
+                    <span class="search-icon">
+                        ⌕
+                    </span>
+
+                    <input
+                        type="search"
+                        id="search-input"
+                        placeholder="Rechercher un film..."
+                        autocomplete="off"
+                    >
+
+                </div>
+
+
+                <div
+                    id="category-filters"
+                    class="category-filters"
+                >
+
+                    <button
+                        class="category-button active"
+                        data-category="ALL"
+                    >
+                        Tous
+                    </button>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- Résultats -->
+
+            <div
+                id="catalogue-grid"
+                class="films-grid"
+            >
+
+                <div class="loading">
+                    Chargement du programme...
+                </div>
+
+            </div>
+
+
+            <div
+                id="no-results"
+                class="no-results hidden"
+            >
+
+                <span>
+                    404
+                </span>
+
+                <h3>
+                    Aucun film trouvé
+                </h3>
+
+                <p>
+                    Essayez une autre recherche ou catégorie.
+                </p>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             VUE PLANNING
+        ================================================== -->
+
+        <section
+            id="planning-view"
+            class="view"
+        >
+
+            <div class="page-heading planning-heading">
+
+                <div>
+
+                    <span class="eyebrow">
+                        VOTRE PROGRAMME
+                    </span>
+
+                    <h2>
+                        Mon planning
+                    </h2>
+
+                    <p>
+                        Les séances de vos films sélectionnés.
+                    </p>
+
+                </div>
+
+
+                <button
+                    id="clear-selection"
+                    class="danger-button"
+                >
+                    Tout effacer
+                </button>
+
+            </div>
+
+
+
+            <!-- Alerte conflits -->
+
+            <div
+                id="conflict-alert"
+                class="conflict-alert hidden"
+            >
+
+                <div class="conflict-icon">
+                    !
+                </div>
+
+                <div>
+
+                    <strong>
+                        Conflit dans votre planning
+                    </strong>
+
+                    <p id="conflict-message">
+                        Certaines séances se chevauchent.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- Planning -->
+
+            <div
+                id="planning-container"
+                class="planning-container"
+            >
+
+                <div class="empty-planning">
+
+                    <div class="empty-icon">
+                        +
+                    </div>
+
+                    <h3>
+                        Votre planning est vide
+                    </h3>
+
+                    <p>
+                        Retournez dans le catalogue et
+                        sélectionnez vos premiers films.
+                    </p>
+
+                    <button
+                        class="primary-button"
+                        id="go-catalogue"
+                    >
+                        Explorer le catalogue
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+
+    <!-- =====================================================
+         MODAL DÉTAIL FILM
+    ====================================================== -->
+
+    <div
+        id="film-modal"
+        class="modal hidden"
+    >
+
+        <div class="modal-backdrop"></div>
+
+        <div class="modal-content">
+
+            <button
+                id="close-modal"
+                class="modal-close"
+            >
+                ×
+            </button>
+
+
+            <div class="modal-category">
+                <span id="modal-category">
+                    COMP
+                </span>
+            </div>
+
+
+            <h2 id="modal-title">
+                Film
+            </h2>
+
+
+            <div class="modal-meta">
+
+                <span id="modal-duration">
+                    —
+                </span>
+
+                <span>
+                    •
+                </span>
+
+                <span id="modal-session-count">
+                    —
+                </span>
+
+            </div>
+
+
+            <div class="modal-section">
+
+                <h3>
+                    Séances
+                </h3>
+
+                <div
+                    id="modal-sessions"
+                    class="modal-sessions"
+                ></div>
+
+            </div>
+
+
+            <button
+                id="modal-selection-button"
+                class="primary-button full-width"
+            >
+                Ajouter à ma sélection
+            </button>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         JAVASCRIPT
+    ====================================================== -->
+
+    <script src="js/planner.js"></script>
+    <script src="js/app.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,1772 @@
+{
+  "festival": "Reims Polar",
+  "annee": 2026,
+  "total_films": 57,
+  "total_seances": 139,
+  "films": [
+    {
+      "id": "borgo",
+      "titre": "BORGO",
+      "categorie": "CORSE",
+      "duree": "1h57",
+      "duree_minutes": 117,
+      "seances": [
+        {
+          "date": "2026-04-04",
+          "jour": "Sam 4",
+          "heure": "11:00",
+          "heure_minutes": 660,
+          "heure_fin": "12:57",
+          "heure_fin_minutes": 777,
+          "salle": "Salle 4"
+        }
+      ]
+    },
+    {
+      "id": "chiens",
+      "titre": "CHIENS",
+      "categorie": "CORSE",
+      "duree": "24 min",
+      "duree_minutes": 24,
+      "seances": [
+        {
+          "date": "2026-04-04",
+          "jour": "Sam 4",
+          "heure": "17:00",
+          "heure_minutes": 1020,
+          "heure_fin": "17:24",
+          "heure_fin_minutes": 1044,
+          "salle": "Salle 4"
+        }
+      ]
+    },
+    {
+      "id": "degrandesesperances",
+      "titre": "DE GRANDES ESPÉRANCES",
+      "categorie": "CORSE",
+      "duree": "1h45",
+      "duree_minutes": 105,
+      "seances": [
+        {
+          "date": "2026-04-01",
+          "jour": "Mer 1",
+          "heure": "17:30",
+          "heure_minutes": 1050,
+          "heure_fin": "19:15",
+          "heure_fin_minutes": 1155,
+          "salle": "Salle 7"
+        }
+      ]
+    },
+    {
+      "id": "diquadaimontiendecadesmonts",
+      "titre": "DIQUÀ DAI MONTI, EN-DEÇÀ-DES-MONTS",
+      "categorie": "CORSE",
+      "duree": "27 min",
+      "duree_minutes": 27,
+      "seances": [
+        {
+          "date": "2026-04-03",
+          "jour": "Ven 3",
+          "heure": "11:00",
+          "heure_minutes": 660,
+          "heure_fin": "11:27",
+          "heure_fin_minutes": 687,
+          "salle": "Salle 4"
+        }
+      ]
+    },
+    {
+      "id": "disaster",
+      "titre": "DISASTER",
+      "categorie": "COMP",
+      "duree": "2h08",
+      "duree_minutes": 128,
+      "seances": [
+        {
+          "date": "2026-04-02",
+          "jour": "Jeu 2",
+          "heure": "10:30",
+          "heure_minutes": 630,
+          "heure_fin": "12:38",
+          "heure_fin_minutes": 758,
+          "salle": "Salle 1"
+        },
+        {
+          "date": "2026-04-02",
+          "jour": "Jeu 2",
+          "heure": "17:00",
+          "heure_minutes": 1020,
+          "heure_fin": "19:08",
+          "heure_fin_minutes": 1148,
+          "salle": "Salle 11"
+        },
+        {
+          "date": "2026-04-03",
+          "jour": "Ven 3",
+          "heure": "22:00",
+          "heure_minutes": 1320,
+          "heure_fin": "24:08",
+          "heure_fin_minutes": 1448,
+          "salle": "Salle 4"
+        },
+        {
+          "date": "2026-04-04",
+          "jour": "Sam 4",
+          "heure": "17:00",
+          "heure_minutes": 1020,
+          "heure_fin": "19:08",
+          "heure_fin_minutes": 1148,
+          "salle": "Salle 7"
+        },
+        {
+          "date": "2026-04-05",
+          "jour": "Dim 5",
+          "heure": "11:00",
+          "heure_minutes": 660,
+          "heure_fin": "13:08",
+          "heure_fin_minutes": 788,
+          "salle": "Salle 4"
+        }
+      ]
+    },
+    {
+      "id": "elephant",
+      "titre": "ELEPHANT",
+      "categorie": "GVS",
+      "duree": "1h21",
+      "duree_minutes": 81,
+      "seances": [
+        {
+          "date": "2026-04-02",
+          "jour": "Jeu 2",
+          "heure": "15:00",
+          "heure_minutes": 900,
+          "heure_fin": "16:21",
+          "heure_fin_minutes": 981,
+          "salle": "Salle 4"
+        }
+      ]
+    },
+    {
+      "id": "father",
+      "titre": "FATHER",
+      "categorie": "SANG",
+      "duree": "1h43",
+      "duree_minutes": 103,
+      "seances": [
+        {
+          "date": "2026-04-02",
+          "jour": "Jeu 2",
+          "heure": "11:00",
+          "heure_minutes": 660,
+          "heure_fin": "12:43",
+          "heure_fin_minutes": 763,
+          "salle": "Salle 10"
+        },
+        {
+          "date": "2026-04-02",
+          "jour": "Jeu 2",
+          "heure": "17:30",
+          "heure_minutes": 1050,
+          "heure_fin": "19:13",
+          "heure_fin_minutes": 1153,
+          "salle": "Salle 9"
+        },
+        {
+          "date": "2026-04-02",
+          "jour": "Jeu 2",
+          "heure": "20:30",
+          "heure_minutes": 1230,
+          "heure_fin": "22:13",
+          "heure_fin_minutes": 1333,
+          "salle": "Salle 9"
+        },
+        {
+          "date": "2026-04-03",
+          "jour": "Ven 3",
+          "heure": "20:00",
+          "heure_minutes": 1200,
+          "heure_fin": "21:43",
+          "heure_fin_minutes": 1303,
+          "salle": "Salle 9"
+        },
+        {
+          "date": "2026-04-05",
+          "jour": "Dim 5",
+          "heure": "15:00",
+          "heure_minutes": 900,
+          "heure_fin": "16:43",
+          "heure_fin_minutes": 1003,
+          "salle": "Salle 9"
+        }
+      ]
+    },
+    {
+      "id": "gagnetonciel",
+      "titre": "G AGNE TON CIEL",
+      "categorie": "COMP",
+      "duree": "1h56",
+      "duree_minutes": 116,
+      "seances": [
+        {
+          "date": "2026-04-03",
+          "jour": "Ven 3",
+          "heure": "10:30",
+          "heure_minutes": 630,
+          "heure_fin": "12:26",
+          "heure_fin_minutes": 746,
+          "salle": "Salle 1"
+        },
+        {
+          "date": "2026-04-03",
+          "jour": "Ven 3",
+          "heure": "15:00",
+          "heure_minutes": 900,
+          "heure_fin": "16:56",
+          "heure_fin_minutes": 1016,
+          "salle": "Salle 9"
+        },
+        {
+          "date": "2026-04-03",
+          "jour": "Ven 3",
+          "heure": "20:00",
+          "heure_minutes": 1200,
+          "heure_fin": "21:56",
+          "heure_fin_minutes": 1316,
+          "salle": "Salle 11"
+        },
+        {
+          "date": "2026-04-03",
+          "jour": "Ven 3",
+          "heure": "22:00",
+          "heure_minutes": 1320,
+          "heure_fin": "23:56",
+          "heure_fin_minutes": 1436,
+          "salle": "Salle 9"
+        },
+        {
+          "date": "2026-04-04",
+          "jour": "Sam 4",
+          "heure": "11:00",
+          "heure_minutes": 660,
+          "heure_fin": "12:56",
+          "heure_fin_minutes": 776,
+          "salle": "Salle 9"
+        }
+      ]
+    },
+    {
+      "id": "growingdown",
+      "titre": "G ROWING DOWN",
+      "categorie": "SANG",
+      "duree": "1h25",
+      "duree_minutes": 85,
+      "seances": [
+        {
+          "date": "2026-04-01",
+          "jour": "Mer 1",
+          "heure": "15:00",
+          "heure_minutes": 900,
+          "heure_fin": "16:25",
+          "heure_fin_minutes": 985,
+          "salle": "Salle 10"
+        },
+        {
+          "date": "2026-04-01",
+          "jour": "Mer 1",
+          "heure": "20:30",
+          "heure_minutes": 1230,
+          "heure_fin": "21:55",
+          "heure_fin_minutes": 1315,
+          "salle": "Salle 4"
+        },
+        {
+          "date": "2026-04-02",
+          "jour": "Jeu 2",
+          "heure": "17:30",
+          "heure_minutes": 1050,
+          "heure_fin": "18:55",
+          "heure_fin_minutes": 1135,
+          "salle": "Salle 4"
+        },
+        {
+          "date": "2026-04-03",
+          "jour": "Ven 3",
+          "heure": "15:00",
+          "heure_minutes": 900,
+          "heure_fin": "16:25",
+          "heure_fin_minutes": 985,
+          "salle": "Salle 7"
+        },
+        {
+          "date": "2026-04-03",
+          "jour": "Ven 3",
+          "heure": "22:00",
+          "heure_minutes": 1320,
+          "heure_fin": "23:25",
+          "heure_fin_minutes": 1405,
+          "salle": "Salle 7"
+        }
+      ]
+    },
+    {
+      "id": "grandciel",
+      "titre": "GRAND CIEL",
+      "categorie": "FOCUS",
+      "duree": "1h31",
+      "duree_minutes": 91,
+      "seances": [
+        {
+          "date": "2026-04-02",
+          "jour": "Jeu 2",
+          "heure": "15:00",
+          "heure_minutes": 900,
+          "heure_fin": "16:31",
+          "heure_fin_minutes": 991,
+          "salle": "Salle 9"
+        },
+        {
+          "date": "2026-04-03",
+          "jour": "Ven 3",
+          "heure": "11:00",
+          "heure_minutes": 660,
+          "heure_fin": "12:31",
+          "heure_fin_minutes": 751,
+          "salle": "Salle 9"
+        }
+      ]
+    },
+    {
+      "id": "indomptables",
+      "titre": "INDOMPTABLES",
+      "categorie": "PCC",
+      "duree": "1h21",
+      "duree_minutes": 81,
+      "seances": [
+        {
+          "date": "2026-04-01",
+          "jour": "Mer 1",
+          "heure": "11:00",
+          "heure_minutes": 660,
+          "heure_fin": "12:21",
+          "heure_fin_minutes": 741,
+          "salle": "Salle 10"
+        },
+        {
+          "date": "2026-04-02",
+          "jour": "Jeu 2",
+          "heure": "17:30",
+          "heure_minutes": 1050,
+          "heure_fin": "18:51",
+          "heure_fin_minutes": 1131,
+          "salle": "Salle 7"
+        },
+        {
+          "date": "2026-04-03",
+          "jour": "Ven 3",
+          "heure": "10:00",
+          "heure_minutes": 600,
+          "heure_fin": "11:21",
+          "heure_fin_minutes": 681,
+          "salle": "Salle 11"
+        },
+        {
+          "date": "2026-04-05",
+          "jour": "Dim 5",
+          "heure": "17:30",
+          "heure_minutes": 1050,
+          "heure_fin": "18:51",
+          "heure_fin_minutes": 1131,
+          "salle": "Salle 11"
+        }
+      ]
+    },
+    {
+      "id": "jairencontrelediable",
+      "titre": "J’AI RENCONTRÉ LE DIABLE",
+      "categorie": "SK",
+      "duree": "2h22",
+      "duree_minutes": 142,
+      "seances": [
+        {
+          "date": "2026-04-04",
+          "jour": "Sam 4",
+          "heure": "20:30",
+          "heure_minutes": 1230,
+          "heure_fin": "22:52",
+          "heure_fin_minutes": 1372,
+          "salle": "Salle 4"
+        }
+      ]
+    },
+    {
+      "id": "keepquiet",
+      "titre": "K EEP QUIET",
+      "categorie": "COMP",
+      "duree": "1h44",
+      "duree_minutes": 104,
+      "seances": [
+        {
+          "date": "2026-04-02",
+          "jour": "Jeu 2",
+          "heure": "14:30",
+          "heure_minutes": 870,
+          "heure_fin": "16:14",
+          "heure_fin_minutes": 974,
+          "salle": "Salle 1"
+        },
+        {
+          "date": "2026-04-02",
+          "jour": "Jeu 2",
+          "heure": "20:30",
+          "heure_minutes": 1230,
+          "heure_fin": "22:14",
+          "heure_fin_minutes": 1334,
+          "salle": "Salle 7"
+        },
+        {
+          "date": "2026-04-03",
+          "jour": "Ven 3",
+          "heure": "15:00",
+          "heure_minutes": 900,
+          "heure_fin": "16:44",
+          "heure_fin_minutes": 1004,
+          "salle": "Salle 8"
+        },
+        {
+          "date": "2026-04-03",
+          "jour": "Ven 3",
+          "heure": "17:30",
+          "heure_minutes": 1050,
+          "heure_fin": "19:14",
+          "heure_fin_minutes": 1154,
+          "salle": "Salle 8"
+        },
+        {
+          "date": "2026-04-04",
+          "jour": "Sam 4",
+          "heure": "11:00",
+          "heure_minutes": 660,
+          "heure_fin": "12:44",
+          "heure_fin_minutes": 764,
+          "salle": "Salle 8"
+        }
+      ]
+    },
+    {
+      "id": "lacordeaucou",
+      "titre": "LA CORDE AU COU",
+      "categorie": "GVS",
+      "duree": "1h44",
+      "duree_minutes": 104,
+      "seances": [
+        {
+          "date": "2026-03-31",
+          "jour": "Mar 31",
+          "heure": "19:00",
+          "heure_minutes": 1140,
+          "heure_fin": "20:44",
+          "heure_fin_minutes": 1244,
+          "salle": "Salle 1"
+        },
+        {
+          "date": "2026-03-31",
+          "jour": "Mar 31",
+          "heure": "20:00",
+          "heure_minutes": 1200,
+          "heure_fin": "21:44",
+          "heure_fin_minutes": 1304,
+          "salle": "Salle 10"
+        }
+      ]
+    },
+    {
+      "id": "lanuitestla",
+      "titre": "LA NUIT EST LÀ",
+      "categorie": "CORSE",
+      "duree": "25 min",
+      "duree_minutes": 25,
+      "seances": [
+        {
+          "date": "2026-04-03",
+          "jour": "Ven 3",
+          "heure": "17:30",
+          "heure_minutes": 1050,
+          "heure_fin": "17:55",
+          "heure_fin_minutes": 1075,
+          "salle": "Salle 4"
+        }
+      ]
+    },
+    {
+      "id": "leboucher",
+      "titre": "LE BOUCHER",
+      "categorie": "SK",
+      "duree": "1h30",
+      "duree_minutes": 90,
+      "seances": [
+        {
+          "date": "2026-04-01",
+          "jour": "Mer 1",
+          "heure": "11:00",
+          "heure_minutes": 660,
+          "heure_fin": "12:30",
+          "heure_fin_minutes": 750,
+          "salle": "Salle 7"
+        },
+        {
+          "date": "2026-04-03",
+          "jour": "Ven 3",
+          "heure": "14:00",
+          "heure_minutes": 840,
+          "heure_fin": "15:30",
+          "heure_fin_minutes": 930,
+          "salle": "Salle 11"
+        }
+      ]
+    },
+    {
+      "id": "lecridesgardes",
+      "titre": "LE CRI DES GARDES",
+      "categorie": "AVP",
+      "duree": "1h49",
+      "duree_minutes": 109,
+      "seances": [
+        {
+          "date": "2026-04-01",
+          "jour": "Mer 1",
+          "heure": "19:30",
+          "heure_minutes": 1170,
+          "heure_fin": "21:19",
+          "heure_fin_minutes": 1279,
+          "salle": "Salle 1"
+        },
+        {
+          "date": "2026-04-01",
+          "jour": "Mer 1",
+          "heure": "20:00",
+          "heure_minutes": 1200,
+          "heure_fin": "21:49",
+          "heure_fin_minutes": 1309,
+          "salle": "Salle 10"
+        },
+        {
+          "date": "2026-04-02",
+          "jour": "Jeu 2",
+          "heure": "17:30",
+          "heure_minutes": 1050,
+          "heure_fin": "19:19",
+          "heure_fin_minutes": 1159,
+          "salle": "Salle 8"
+        },
+        {
+          "date": "2026-04-02",
+          "jour": "Jeu 2",
+          "heure": "20:30",
+          "heure_minutes": 1230,
+          "heure_fin": "22:19",
+          "heure_fin_minutes": 1339,
+          "salle": "Salle 8"
+        }
+      ]
+    },
+    {
+      "id": "lejourdemamort",
+      "titre": "LE JOUR DE MA MORT",
+      "categorie": "CORSE",
+      "duree": "19 min",
+      "duree_minutes": 19,
+      "seances": [
+        {
+          "date": "2026-04-03",
+          "jour": "Ven 3",
+          "heure": "15:00",
+          "heure_minutes": 900,
+          "heure_fin": "15:19",
+          "heure_fin_minutes": 919,
+          "salle": "Salle 4"
+        }
+      ]
+    },
+    {
+      "id": "lemauredekaratas",
+      "titre": "LE MAURE DE KARATAS",
+      "categorie": "COMP",
+      "duree": "1h23",
+      "duree_minutes": 83,
+      "seances": [
+        {
+          "date": "2026-04-01",
+          "jour": "Mer 1",
+          "heure": "14:30",
+          "heure_minutes": 870,
+          "heure_fin": "15:53",
+          "heure_fin_minutes": 953,
+          "salle": "Salle 1"
+        },
+        {
+          "date": "2026-04-01",
+          "jour": "Mer 1",
+          "heure": "17:00",
+          "heure_minutes": 1020,
+          "heure_fin": "18:23",
+          "heure_fin_minutes": 1103,
+          "salle": "Salle 10"
+        },
+        {
+          "date": "2026-04-02",
+          "jour": "Jeu 2",
+          "heure": "11:00",
+          "heure_minutes": 660,
+          "heure_fin": "12:23",
+          "heure_fin_minutes": 743,
+          "salle": "Salle 7"
+        },
+        {
+          "date": "2026-04-04",
+          "jour": "Sam 4",
+          "heure": "14:30",
+          "heure_minutes": 870,
+          "heure_fin": "15:53",
+          "heure_fin_minutes": 953,
+          "salle": "Salle 7"
+        },
+        {
+          "date": "2026-04-05",
+          "jour": "Dim 5",
+          "heure": "11:00",
+          "heure_minutes": 660,
+          "heure_fin": "12:23",
+          "heure_fin_minutes": 743,
+          "salle": "Salle 7"
+        }
+      ]
+    },
+    {
+      "id": "lemohican",
+      "titre": "LE MOHICAN",
+      "categorie": "CORSE",
+      "duree": "1h27",
+      "duree_minutes": 87,
+      "seances": [
+        {
+          "date": "2026-04-03",
+          "jour": "Ven 3",
+          "heure": "11:00",
+          "heure_minutes": 660,
+          "heure_fin": "12:27",
+          "heure_fin_minutes": 747,
+          "salle": "Salle 4"
+        }
+      ]
+    },
+    {
+      "id": "leroyaume",
+      "titre": "LE ROYAUME",
+      "categorie": "CORSE",
+      "duree": "1h51",
+      "duree_minutes": 111,
+      "seances": [
+        {
+          "date": "2026-04-04",
+          "jour": "Sam 4",
+          "heure": "17:00",
+          "heure_minutes": 1020,
+          "heure_fin": "18:51",
+          "heure_fin_minutes": 1131,
+          "salle": "Salle 4"
+        }
+      ]
+    },
+    {
+      "id": "lesilence",
+      "titre": "LE SILENCE",
+      "categorie": "CORSE",
+      "duree": "1h44",
+      "duree_minutes": 104,
+      "seances": [
+        {
+          "date": "2026-04-03",
+          "jour": "Ven 3",
+          "heure": "17:30",
+          "heure_minutes": 1050,
+          "heure_fin": "19:14",
+          "heure_fin_minutes": 1154,
+          "salle": "Salle 4"
+        }
+      ]
+    },
+    {
+      "id": "lesixiemesens",
+      "titre": "LE SIXIÈME SENS",
+      "categorie": "SK",
+      "duree": "2h00",
+      "duree_minutes": 120,
+      "seances": [
+        {
+          "date": "2026-04-02",
+          "jour": "Jeu 2",
+          "heure": "11:00",
+          "heure_minutes": 660,
+          "heure_fin": "13:00",
+          "heure_fin_minutes": 780,
+          "salle": "Salle 4"
+        }
+      ]
+    },
+    {
+      "id": "lesapaches",
+      "titre": "LES APACHES",
+      "categorie": "CORSE",
+      "duree": "1h22",
+      "duree_minutes": 82,
+      "seances": [
+        {
+          "date": "2026-04-03",
+          "jour": "Ven 3",
+          "heure": "15:00",
+          "heure_minutes": 900,
+          "heure_fin": "16:22",
+          "heure_fin_minutes": 982,
+          "salle": "Salle 4"
+        }
+      ]
+    },
+    {
+      "id": "leschambresrouges",
+      "titre": "LES CHAMBRES ROUGES",
+      "categorie": "SK",
+      "duree": "1h58",
+      "duree_minutes": 118,
+      "seances": [
+        {
+          "date": "2026-04-01",
+          "jour": "Mer 1",
+          "heure": "15:00",
+          "heure_minutes": 900,
+          "heure_fin": "16:58",
+          "heure_fin_minutes": 1018,
+          "salle": "Salle 8"
+        }
+      ]
+    },
+    {
+      "id": "lescrimesdesnowtown",
+      "titre": "LES CRIMES DE SNOWTOWN",
+      "categorie": "SK",
+      "duree": "2h00",
+      "duree_minutes": 120,
+      "seances": [
+        {
+          "date": "2026-04-01",
+          "jour": "Mer 1",
+          "heure": "20:30",
+          "heure_minutes": 1230,
+          "heure_fin": "22:30",
+          "heure_fin_minutes": 1350,
+          "salle": "Salle 8"
+        },
+        {
+          "date": "2026-04-02",
+          "jour": "Jeu 2",
+          "heure": "11:00",
+          "heure_minutes": 660,
+          "heure_fin": "13:00",
+          "heure_fin_minutes": 780,
+          "salle": "Salle 8"
+        }
+      ]
+    },
+    {
+      "id": "lesfortsnedisentrien",
+      "titre": "LES FORTS NE DISENT RIEN",
+      "categorie": "CORSE",
+      "duree": "32 min",
+      "duree_minutes": 32,
+      "seances": [
+        {
+          "date": "2026-04-02",
+          "jour": "Jeu 2",
+          "heure": "15:00",
+          "heure_minutes": 900,
+          "heure_fin": "15:32",
+          "heure_fin_minutes": 932,
+          "salle": "Salle 7"
+        }
+      ]
+    },
+    {
+      "id": "lesmiserables",
+      "titre": "LES MISÉRABLES",
+      "categorie": "FOCUS",
+      "duree": "1h45",
+      "duree_minutes": 105,
+      "seances": [
+        {
+          "date": "2026-04-01",
+          "jour": "Mer 1",
+          "heure": "15:00",
+          "heure_minutes": 900,
+          "heure_fin": "16:45",
+          "heure_fin_minutes": 1005,
+          "salle": "Salle 7"
+        },
+        {
+          "date": "2026-04-04",
+          "jour": "Sam 4",
+          "heure": "20:00",
+          "heure_minutes": 1200,
+          "heure_fin": "21:45",
+          "heure_fin_minutes": 1305,
+          "salle": "Salle 8"
+        }
+      ]
+    },
+    {
+      "id": "lessilencesderiyad",
+      "titre": "LES SILENCES DE RIYAD",
+      "categorie": "COMP",
+      "duree": "1h39",
+      "duree_minutes": 99,
+      "seances": [
+        {
+          "date": "2026-04-03",
+          "jour": "Ven 3",
+          "heure": "14:30",
+          "heure_minutes": 870,
+          "heure_fin": "16:09",
+          "heure_fin_minutes": 969,
+          "salle": "Salle 1"
+        },
+        {
+          "date": "2026-04-03",
+          "jour": "Ven 3",
+          "heure": "17:30",
+          "heure_minutes": 1050,
+          "heure_fin": "19:09",
+          "heure_fin_minutes": 1149,
+          "salle": "Salle 9"
+        },
+        {
+          "date": "2026-04-04",
+          "jour": "Sam 4",
+          "heure": "17:00",
+          "heure_minutes": 1020,
+          "heure_fin": "18:39",
+          "heure_fin_minutes": 1119,
+          "salle": "Salle 9"
+        },
+        {
+          "date": "2026-04-04",
+          "jour": "Sam 4",
+          "heure": "22:15",
+          "heure_minutes": 1335,
+          "heure_fin": "23:54",
+          "heure_fin_minutes": 1434,
+          "salle": "Salle 11"
+        },
+        {
+          "date": "2026-04-05",
+          "jour": "Dim 5",
+          "heure": "11:00",
+          "heure_minutes": 660,
+          "heure_fin": "12:39",
+          "heure_fin_minutes": 759,
+          "salle": "Salle 11"
+        }
+      ]
+    },
+    {
+      "id": "laffairesk1",
+      "titre": "L’AFFAIRE SK1",
+      "categorie": "SK",
+      "duree": "2h00",
+      "duree_minutes": 120,
+      "seances": [
+        {
+          "date": "2026-04-01",
+          "jour": "Mer 1",
+          "heure": "11:00",
+          "heure_minutes": 660,
+          "heure_fin": "13:00",
+          "heure_fin_minutes": 780,
+          "salle": "Salle 9"
+        }
+      ]
+    },
+    {
+      "id": "mlemaudit",
+      "titre": "M LE MAUDIT",
+      "categorie": "SK",
+      "duree": "1h58",
+      "duree_minutes": 118,
+      "seances": [
+        {
+          "date": "2026-04-01",
+          "jour": "Mer 1",
+          "heure": "11:00",
+          "heure_minutes": 660,
+          "heure_fin": "12:58",
+          "heure_fin_minutes": 778,
+          "salle": "Salle 8"
+        }
+      ]
+    },
+    {
+      "id": "mata",
+      "titre": "MATA",
+      "categorie": "AVP",
+      "duree": "1h35",
+      "duree_minutes": 95,
+      "seances": [
+        {
+          "date": "2026-04-04",
+          "jour": "Sam 4",
+          "heure": "19:30",
+          "heure_minutes": 1170,
+          "heure_fin": "21:05",
+          "heure_fin_minutes": 1265,
+          "salle": "Salle 1"
+        },
+        {
+          "date": "2026-04-04",
+          "jour": "Sam 4",
+          "heure": "20:00",
+          "heure_minutes": 1200,
+          "heure_fin": "21:35",
+          "heure_fin_minutes": 1295,
+          "salle": "Salle 10"
+        },
+        {
+          "date": "2026-04-04",
+          "jour": "Sam 4",
+          "heure": "22:00",
+          "heure_minutes": 1320,
+          "heure_fin": "23:35",
+          "heure_fin_minutes": 1415,
+          "salle": "Salle 10"
+        },
+        {
+          "date": "2026-04-05",
+          "jour": "Dim 5",
+          "heure": "14:30",
+          "heure_minutes": 870,
+          "heure_fin": "16:05",
+          "heure_fin_minutes": 965,
+          "salle": "Salle 10"
+        }
+      ]
+    },
+    {
+      "id": "memoriesofmurder",
+      "titre": "MEMORIES OF MURDER",
+      "categorie": "SK",
+      "duree": "2h11",
+      "duree_minutes": 131,
+      "seances": [
+        {
+          "date": "2026-04-01",
+          "jour": "Mer 1",
+          "heure": "20:30",
+          "heure_minutes": 1230,
+          "heure_fin": "22:41",
+          "heure_fin_minutes": 1361,
+          "salle": "Salle 7"
+        }
+      ]
+    },
+    {
+      "id": "miamor",
+      "titre": "MI AMOR",
+      "categorie": "COMP",
+      "duree": "1h55",
+      "duree_minutes": 115,
+      "seances": [
+        {
+          "date": "2026-04-02",
+          "jour": "Jeu 2",
+          "heure": "19:30",
+          "heure_minutes": 1170,
+          "heure_fin": "21:25",
+          "heure_fin_minutes": 1285,
+          "salle": "Salle 1"
+        },
+        {
+          "date": "2026-04-02",
+          "jour": "Jeu 2",
+          "heure": "20:00",
+          "heure_minutes": 1200,
+          "heure_fin": "21:55",
+          "heure_fin_minutes": 1315,
+          "salle": "Salle 10"
+        },
+        {
+          "date": "2026-04-03",
+          "jour": "Ven 3",
+          "heure": "22:15",
+          "heure_minutes": 1335,
+          "heure_fin": "24:10",
+          "heure_fin_minutes": 1450,
+          "salle": "Salle 11"
+        },
+        {
+          "date": "2026-04-04",
+          "jour": "Sam 4",
+          "heure": "14:00",
+          "heure_minutes": 840,
+          "heure_fin": "15:55",
+          "heure_fin_minutes": 955,
+          "salle": "Salle 9"
+        },
+        {
+          "date": "2026-04-05",
+          "jour": "Dim 5",
+          "heure": "11:00",
+          "heure_minutes": 660,
+          "heure_fin": "12:55",
+          "heure_fin_minutes": 775,
+          "salle": "Salle 9"
+        }
+      ]
+    },
+    {
+      "id": "mortecucina",
+      "titre": "MORTE CUCINA",
+      "categorie": "SANG",
+      "duree": "1h36",
+      "duree_minutes": 96,
+      "seances": [
+        {
+          "date": "2026-04-02",
+          "jour": "Jeu 2",
+          "heure": "17:00",
+          "heure_minutes": 1020,
+          "heure_fin": "18:36",
+          "heure_fin_minutes": 1116,
+          "salle": "Salle 10"
+        },
+        {
+          "date": "2026-04-02",
+          "jour": "Jeu 2",
+          "heure": "20:30",
+          "heure_minutes": 1230,
+          "heure_fin": "22:06",
+          "heure_fin_minutes": 1326,
+          "salle": "Salle 4"
+        },
+        {
+          "date": "2026-04-03",
+          "jour": "Ven 3",
+          "heure": "11:00",
+          "heure_minutes": 660,
+          "heure_fin": "12:36",
+          "heure_fin_minutes": 756,
+          "salle": "Salle 7"
+        },
+        {
+          "date": "2026-04-03",
+          "jour": "Ven 3",
+          "heure": "22:00",
+          "heure_minutes": 1320,
+          "heure_fin": "23:36",
+          "heure_fin_minutes": 1416,
+          "salle": "Salle 8"
+        },
+        {
+          "date": "2026-04-05",
+          "jour": "Dim 5",
+          "heure": "17:00",
+          "heure_minutes": 1020,
+          "heure_fin": "18:36",
+          "heure_fin_minutes": 1116,
+          "salle": "Salle 8"
+        }
+      ]
+    },
+    {
+      "id": "nuitbleue",
+      "titre": "NUIT BLEUE",
+      "categorie": "CORSE",
+      "duree": "1h26",
+      "duree_minutes": 86,
+      "seances": [
+        {
+          "date": "2026-04-02",
+          "jour": "Jeu 2",
+          "heure": "15:00",
+          "heure_minutes": 900,
+          "heure_fin": "16:26",
+          "heure_fin_minutes": 986,
+          "salle": "Salle 7"
+        }
+      ]
+    },
+    {
+      "id": "paolo",
+      "titre": "PAOLO",
+      "categorie": "SÉRIE",
+      "duree": "1h48",
+      "duree_minutes": 108,
+      "seances": [
+        {
+          "date": "2026-04-04",
+          "jour": "Sam 4",
+          "heure": "17:00",
+          "heure_minutes": 1020,
+          "heure_fin": "18:48",
+          "heure_fin_minutes": 1128,
+          "salle": "Salle 10"
+        }
+      ]
+    },
+    {
+      "id": "paranoidpark",
+      "titre": "PARANOID PARK",
+      "categorie": "GVS",
+      "duree": "1h25",
+      "duree_minutes": 85,
+      "seances": [
+        {
+          "date": "2026-04-01",
+          "jour": "Mer 1",
+          "heure": "15:00",
+          "heure_minutes": 900,
+          "heure_fin": "16:25",
+          "heure_fin_minutes": 985,
+          "salle": "Salle 4"
+        }
+      ]
+    },
+    {
+      "id": "preteatout",
+      "titre": "PRÊTE À TOUT",
+      "categorie": "GVS",
+      "duree": "1h46",
+      "duree_minutes": 106,
+      "seances": [
+        {
+          "date": "2026-04-02",
+          "jour": "Jeu 2",
+          "heure": "10:00",
+          "heure_minutes": 600,
+          "heure_fin": "11:46",
+          "heure_fin_minutes": 706,
+          "salle": "Salle 11"
+        }
+      ]
+    },
+    {
+      "id": "pulsions",
+      "titre": "PULSIONS",
+      "categorie": "SK",
+      "duree": "1h45",
+      "duree_minutes": 105,
+      "seances": [
+        {
+          "date": "2026-04-01",
+          "jour": "Mer 1",
+          "heure": "17:30",
+          "heure_minutes": 1050,
+          "heure_fin": "19:15",
+          "heure_fin_minutes": 1155,
+          "salle": "Salle 8"
+        }
+      ]
+    },
+    {
+      "id": "redcodeblue",
+      "titre": "R ED CODE BLUE",
+      "categorie": "COMP",
+      "duree": "2h28",
+      "duree_minutes": 148,
+      "seances": [
+        {
+          "date": "2026-04-01",
+          "jour": "Mer 1",
+          "heure": "10:30",
+          "heure_minutes": 630,
+          "heure_fin": "12:58",
+          "heure_fin_minutes": 778,
+          "salle": "Salle 1"
+        },
+        {
+          "date": "2026-04-01",
+          "jour": "Mer 1",
+          "heure": "20:00",
+          "heure_minutes": 1200,
+          "heure_fin": "22:28",
+          "heure_fin_minutes": 1348,
+          "salle": "Salle 11"
+        },
+        {
+          "date": "2026-04-02",
+          "jour": "Jeu 2",
+          "heure": "14:00",
+          "heure_minutes": 840,
+          "heure_fin": "16:28",
+          "heure_fin_minutes": 988,
+          "salle": "Salle 10"
+        },
+        {
+          "date": "2026-04-03",
+          "jour": "Ven 3",
+          "heure": "11:00",
+          "heure_minutes": 660,
+          "heure_fin": "13:28",
+          "heure_fin_minutes": 808,
+          "salle": "Salle 8"
+        },
+        {
+          "date": "2026-04-04",
+          "jour": "Sam 4",
+          "heure": "14:00",
+          "heure_minutes": 840,
+          "heure_fin": "16:28",
+          "heure_fin_minutes": 988,
+          "salle": "Salle 8"
+        }
+      ]
+    },
+    {
+      "id": "sixfemmespourlassassin",
+      "titre": "S IX FEMMES POUR L’ASSASSIN",
+      "categorie": "SK",
+      "duree": "1h28",
+      "duree_minutes": 88,
+      "seances": [
+        {
+          "date": "2026-04-02",
+          "jour": "Jeu 2",
+          "heure": "15:00",
+          "heure_minutes": 900,
+          "heure_fin": "16:28",
+          "heure_fin_minutes": 988,
+          "salle": "Salle 8"
+        }
+      ]
+    },
+    {
+      "id": "sonsoftheneonnight",
+      "titre": "S ONS OF THE NEON NIGHT",
+      "categorie": "COMP",
+      "duree": "2h05",
+      "duree_minutes": 125,
+      "seances": [
+        {
+          "date": "2026-04-04",
+          "jour": "Sam 4",
+          "heure": "10:30",
+          "heure_minutes": 630,
+          "heure_fin": "12:35",
+          "heure_fin_minutes": 755,
+          "salle": "Salle 1"
+        },
+        {
+          "date": "2026-04-04",
+          "jour": "Sam 4",
+          "heure": "14:00",
+          "heure_minutes": 840,
+          "heure_fin": "16:05",
+          "heure_fin_minutes": 965,
+          "salle": "Salle 10"
+        }
+      ]
+    },
+    {
+      "id": "sousemprise",
+      "titre": "S OUS EMPRISE",
+      "categorie": "SANG",
+      "duree": "1h56",
+      "duree_minutes": 116,
+      "seances": [
+        {
+          "date": "2026-04-04",
+          "jour": "Sam 4",
+          "heure": "11:00",
+          "heure_minutes": 660,
+          "heure_fin": "12:56",
+          "heure_fin_minutes": 776,
+          "salle": "Salle 10"
+        },
+        {
+          "date": "2026-04-04",
+          "jour": "Sam 4",
+          "heure": "14:00",
+          "heure_minutes": 840,
+          "heure_fin": "15:56",
+          "heure_fin_minutes": 956,
+          "salle": "Salle 4"
+        },
+        {
+          "date": "2026-04-05",
+          "jour": "Dim 5",
+          "heure": "15:00",
+          "heure_minutes": 900,
+          "heure_fin": "16:56",
+          "heure_fin_minutes": 1016,
+          "salle": "Salle 7"
+        },
+        {
+          "date": "2026-04-05",
+          "jour": "Dim 5",
+          "heure": "17:15",
+          "heure_minutes": 1035,
+          "heure_fin": "19:11",
+          "heure_fin_minutes": 1151,
+          "salle": "Salle 7"
+        }
+      ]
+    },
+    {
+      "id": "seuleslesbetes",
+      "titre": "SEULES LES BÊTES",
+      "categorie": "FOCUS",
+      "duree": "1h57",
+      "duree_minutes": 117,
+      "seances": [
+        {
+          "date": "2026-04-01",
+          "jour": "Mer 1",
+          "heure": "17:30",
+          "heure_minutes": 1050,
+          "heure_fin": "19:27",
+          "heure_fin_minutes": 1167,
+          "salle": "Salle 4"
+        }
+      ]
+    },
+    {
+      "id": "seven",
+      "titre": "SEVEN",
+      "categorie": "SK",
+      "duree": "2h07",
+      "duree_minutes": 127,
+      "seances": [
+        {
+          "date": "2026-04-01",
+          "jour": "Mer 1",
+          "heure": "10:00",
+          "heure_minutes": 600,
+          "heure_fin": "12:07",
+          "heure_fin_minutes": 727,
+          "salle": "Salle 11"
+        }
+      ]
+    },
+    {
+      "id": "sham",
+      "titre": "SHAM",
+      "categorie": "AVP",
+      "duree": "2h09",
+      "duree_minutes": 129,
+      "seances": [
+        {
+          "date": "2026-04-01",
+          "jour": "Mer 1",
+          "heure": "16:30",
+          "heure_minutes": 990,
+          "heure_fin": "18:39",
+          "heure_fin_minutes": 1119,
+          "salle": "Salle 1"
+        },
+        {
+          "date": "2026-04-01",
+          "jour": "Mer 1",
+          "heure": "20:30",
+          "heure_minutes": 1230,
+          "heure_fin": "22:39",
+          "heure_fin_minutes": 1359,
+          "salle": "Salle 9"
+        },
+        {
+          "date": "2026-04-02",
+          "jour": "Jeu 2",
+          "heure": "11:00",
+          "heure_minutes": 660,
+          "heure_fin": "13:09",
+          "heure_fin_minutes": 789,
+          "salle": "Salle 9"
+        },
+        {
+          "date": "2026-04-04",
+          "jour": "Sam 4",
+          "heure": "20:30",
+          "heure_minutes": 1230,
+          "heure_fin": "22:39",
+          "heure_fin_minutes": 1359,
+          "salle": "Salle 9"
+        },
+        {
+          "date": "2026-04-05",
+          "jour": "Dim 5",
+          "heure": "17:00",
+          "heure_minutes": 1020,
+          "heure_fin": "19:09",
+          "heure_fin_minutes": 1149,
+          "salle": "Salle 9"
+        }
+      ]
+    },
+    {
+      "id": "sister",
+      "titre": "SISTER",
+      "categorie": "SANG",
+      "duree": "1h27",
+      "duree_minutes": 87,
+      "seances": [
+        {
+          "date": "2026-04-03",
+          "jour": "Ven 3",
+          "heure": "15:00",
+          "heure_minutes": 900,
+          "heure_fin": "16:27",
+          "heure_fin_minutes": 987,
+          "salle": "Salle 10"
+        },
+        {
+          "date": "2026-04-03",
+          "jour": "Ven 3",
+          "heure": "20:00",
+          "heure_minutes": 1200,
+          "heure_fin": "21:27",
+          "heure_fin_minutes": 1287,
+          "salle": "Salle 4"
+        },
+        {
+          "date": "2026-04-04",
+          "jour": "Sam 4",
+          "heure": "11:00",
+          "heure_minutes": 660,
+          "heure_fin": "12:27",
+          "heure_fin_minutes": 747,
+          "salle": "Salle 7"
+        },
+        {
+          "date": "2026-04-05",
+          "jour": "Dim 5",
+          "heure": "15:00",
+          "heure_minutes": 900,
+          "heure_fin": "16:27",
+          "heure_fin_minutes": 987,
+          "salle": "Salle 4"
+        },
+        {
+          "date": "2026-04-05",
+          "jour": "Dim 5",
+          "heure": "17:00",
+          "heure_minutes": 1020,
+          "heure_fin": "18:27",
+          "heure_fin_minutes": 1107,
+          "salle": "Salle 4"
+        }
+      ]
+    },
+    {
+      "id": "sovereign",
+      "titre": "SOVEREIGN",
+      "categorie": "SANG",
+      "duree": "1h40",
+      "duree_minutes": 100,
+      "seances": [
+        {
+          "date": "2026-04-03",
+          "jour": "Ven 3",
+          "heure": "11:00",
+          "heure_minutes": 660,
+          "heure_fin": "12:40",
+          "heure_fin_minutes": 760,
+          "salle": "Salle 10"
+        },
+        {
+          "date": "2026-04-03",
+          "jour": "Ven 3",
+          "heure": "17:30",
+          "heure_minutes": 1050,
+          "heure_fin": "19:10",
+          "heure_fin_minutes": 1150,
+          "salle": "Salle 7"
+        },
+        {
+          "date": "2026-04-03",
+          "jour": "Ven 3",
+          "heure": "20:00",
+          "heure_minutes": 1200,
+          "heure_fin": "21:40",
+          "heure_fin_minutes": 1300,
+          "salle": "Salle 8"
+        },
+        {
+          "date": "2026-04-04",
+          "jour": "Sam 4",
+          "heure": "11:30",
+          "heure_minutes": 690,
+          "heure_fin": "13:10",
+          "heure_fin_minutes": 790,
+          "salle": "Salle 11"
+        },
+        {
+          "date": "2026-04-05",
+          "jour": "Dim 5",
+          "heure": "15:00",
+          "heure_minutes": 900,
+          "heure_fin": "16:40",
+          "heure_fin_minutes": 1000,
+          "salle": "Salle 8"
+        }
+      ]
+    },
+    {
+      "id": "spechicago",
+      "titre": "SPÉ CHICAGO",
+      "categorie": "",
+      "duree": "",
+      "duree_minutes": null,
+      "seances": [
+        {
+          "date": "2026-04-01",
+          "jour": "Mer 1",
+          "heure": "10:00",
+          "heure_minutes": 600,
+          "heure_fin": null,
+          "heure_fin_minutes": null,
+          "salle": "Salle 4"
+        }
+      ]
+    },
+    {
+      "id": "speuneviedechat",
+      "titre": "SPÉ U NE VIE DE CHAT",
+      "categorie": "",
+      "duree": "1h10",
+      "duree_minutes": 70,
+      "seances": [
+        {
+          "date": "2026-04-05",
+          "jour": "Dim 5",
+          "heure": "11:00",
+          "heure_minutes": 660,
+          "heure_fin": "12:10",
+          "heure_fin_minutes": 730,
+          "salle": "Salle 10"
+        }
+      ]
+    },
+    {
+      "id": "thelastviking",
+      "titre": "T HE LAST VIKING",
+      "categorie": "AVP",
+      "duree": "1h56",
+      "duree_minutes": 116,
+      "seances": [
+        {
+          "date": "2026-04-02",
+          "jour": "Jeu 2",
+          "heure": "16:45",
+          "heure_minutes": 1005,
+          "heure_fin": "18:41",
+          "heure_fin_minutes": 1121,
+          "salle": "Salle 1"
+        },
+        {
+          "date": "2026-04-02",
+          "jour": "Jeu 2",
+          "heure": "20:00",
+          "heure_minutes": 1200,
+          "heure_fin": "21:56",
+          "heure_fin_minutes": 1316,
+          "salle": "Salle 11"
+        },
+        {
+          "date": "2026-04-04",
+          "jour": "Sam 4",
+          "heure": "17:30",
+          "heure_minutes": 1050,
+          "heure_fin": "19:26",
+          "heure_fin_minutes": 1166,
+          "salle": "Salle 11"
+        },
+        {
+          "date": "2026-04-04",
+          "jour": "Sam 4",
+          "heure": "20:00",
+          "heure_minutes": 1200,
+          "heure_fin": "21:56",
+          "heure_fin_minutes": 1316,
+          "salle": "Salle 11"
+        },
+        {
+          "date": "2026-04-05",
+          "jour": "Dim 5",
+          "heure": "14:30",
+          "heure_minutes": 870,
+          "heure_fin": "16:26",
+          "heure_fin_minutes": 986,
+          "salle": "Salle 11"
+        }
+      ]
+    },
+    {
+      "id": "thecriminals",
+      "titre": "THE CRIMINALS",
+      "categorie": "AVP",
+      "duree": "1h38",
+      "duree_minutes": 98,
+      "seances": [
+        {
+          "date": "2026-04-03",
+          "jour": "Ven 3",
+          "heure": "17:00",
+          "heure_minutes": 1020,
+          "heure_fin": "18:38",
+          "heure_fin_minutes": 1118,
+          "salle": "Salle 1"
+        },
+        {
+          "date": "2026-04-03",
+          "jour": "Ven 3",
+          "heure": "20:00",
+          "heure_minutes": 1200,
+          "heure_fin": "21:38",
+          "heure_fin_minutes": 1298,
+          "salle": "Salle 7"
+        },
+        {
+          "date": "2026-04-04",
+          "jour": "Sam 4",
+          "heure": "20:00",
+          "heure_minutes": 1200,
+          "heure_fin": "21:38",
+          "heure_fin_minutes": 1298,
+          "salle": "Salle 7"
+        },
+        {
+          "date": "2026-04-04",
+          "jour": "Sam 4",
+          "heure": "22:00",
+          "heure_minutes": 1320,
+          "heure_fin": "23:38",
+          "heure_fin_minutes": 1418,
+          "salle": "Salle 7"
+        },
+        {
+          "date": "2026-04-05",
+          "jour": "Dim 5",
+          "heure": "17:30",
+          "heure_minutes": 1050,
+          "heure_fin": "19:08",
+          "heure_fin_minutes": 1148,
+          "salle": "Salle 10"
+        }
+      ]
+    },
+    {
+      "id": "tenebres",
+      "titre": "TÉNÈBRES",
+      "categorie": "SK",
+      "duree": "1h41",
+      "duree_minutes": 101,
+      "seances": [
+        {
+          "date": "2026-04-01",
+          "jour": "Mer 1",
+          "heure": "17:30",
+          "heure_minutes": 1050,
+          "heure_fin": "19:11",
+          "heure_fin_minutes": 1151,
+          "salle": "Salle 9"
+        }
+      ]
+    },
+    {
+      "id": "unepluiesansfin",
+      "titre": "U NE PLUIE SANS FIN",
+      "categorie": "SK",
+      "duree": "1h59",
+      "duree_minutes": 119,
+      "seances": [
+        {
+          "date": "2026-04-01",
+          "jour": "Mer 1",
+          "heure": "15:00",
+          "heure_minutes": 900,
+          "heure_fin": "16:59",
+          "heure_fin_minutes": 1019,
+          "salle": "Salle 9"
+        }
+      ]
+    },
+    {
+      "id": "untilikillyou",
+      "titre": "U NTIL I KILL YOU",
+      "categorie": "SÉRIE",
+      "duree": "1h30",
+      "duree_minutes": 90,
+      "seances": [
+        {
+          "date": "2026-04-03",
+          "jour": "Ven 3",
+          "heure": "17:30",
+          "heure_minutes": 1050,
+          "heure_fin": "19:00",
+          "heure_fin_minutes": 1140,
+          "salle": "Salle 10"
+        }
+      ]
+    },
+    {
+      "id": "winterofthecrow",
+      "titre": "W INTER OF THE CROW",
+      "categorie": "COMP",
+      "duree": "1h52",
+      "duree_minutes": 112,
+      "seances": [
+        {
+          "date": "2026-04-03",
+          "jour": "Ven 3",
+          "heure": "19:30",
+          "heure_minutes": 1170,
+          "heure_fin": "21:22",
+          "heure_fin_minutes": 1282,
+          "salle": "Salle 1"
+        },
+        {
+          "date": "2026-04-03",
+          "jour": "Ven 3",
+          "heure": "20:00",
+          "heure_minutes": 1200,
+          "heure_fin": "21:52",
+          "heure_fin_minutes": 1312,
+          "salle": "Salle 10"
+        },
+        {
+          "date": "2026-04-04",
+          "jour": "Sam 4",
+          "heure": "17:00",
+          "heure_minutes": 1020,
+          "heure_fin": "18:52",
+          "heure_fin_minutes": 1132,
+          "salle": "Salle 8"
+        },
+        {
+          "date": "2026-04-04",
+          "jour": "Sam 4",
+          "heure": "22:00",
+          "heure_minutes": 1320,
+          "heure_fin": "23:52",
+          "heure_fin_minutes": 1432,
+          "salle": "Salle 8"
+        },
+        {
+          "date": "2026-04-05",
+          "jour": "Dim 5",
+          "heure": "11:00",
+          "heure_minutes": 660,
+          "heure_fin": "12:52",
+          "heure_fin_minutes": 772,
+          "salle": "Salle 8"
+        }
+      ]
+    }
+  ]
+}

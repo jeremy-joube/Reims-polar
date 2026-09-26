@@ -1,31 +1,37 @@
-import requests
-import pdfplumber
+import json
 import re
 import unicodedata
-
 from pathlib import Path
-from openpyxl import Workbook
+from datetime import datetime
+
+import pandas as pd
+import pdfplumber
+import requests
 
 
 # ============================================================
 # CONFIGURATION
 # ============================================================
 
-URL = (
-    "https://reimspolar.com/wp-content/uploads/2026/03/"
-    "Programme-des-projections-Seances-par-film-REIMS-POLAR-2026-OK.pdf"
-)
-
 BASE_DIR = Path(__file__).resolve().parent
 
 PDF_DIR = BASE_DIR / "pdf"
 OUTPUT_DIR = BASE_DIR / "output"
 
-PDF_DIR.mkdir(exist_ok=True)
-OUTPUT_DIR.mkdir(exist_ok=True)
+WEB_DIR = BASE_DIR / "web"
+WEB_DATA_DIR = WEB_DIR / "data"
 
 PDF_FILE = PDF_DIR / "programme_reims_polar.pdf"
+
 EXCEL_FILE = OUTPUT_DIR / "Reims_Polar_2026.xlsx"
+JSON_FILE = OUTPUT_DIR / "Reims_Polar_2026.json"
+WEB_JSON_FILE = WEB_DATA_DIR / "Reims_Polar_2026.json"
+
+
+URL = (
+    "https://reimspolar.com/wp-content/uploads/2026/03/"
+    "Programme-des-projections-Seances-par-film-REIMS-POLAR-2026-OK.pdf"
+)
 
 
 # ============================================================
@@ -43,7 +49,7 @@ DATES = {
 
 
 # ============================================================
-# CATÉGORIES DU FESTIVAL
+# CATÉGORIES
 # ============================================================
 
 CATEGORIES = (
@@ -60,16 +66,16 @@ CATEGORIES = (
 
 
 # ============================================================
-# DURÉES DE SECOURS
+# DURÉES MANUELLES
+# ============================================================
 #
-# Utilisées uniquement lorsque la durée n'a pas pu être
-# récupérée automatiquement dans le PDF.
+# Ces durées sont utilisées uniquement lorsque le PDF
+# ne permet pas d'associer correctement une durée au film.
 #
-# Les valeurs sont exprimées en minutes.
+# Valeurs en minutes.
 # ============================================================
 
 DUREES_MANUELLES = {
-
     "BORGO": 117,
     "CHIENS": 24,
     "DIQUA DAI MONTI EN DECA DES MONTS": 27,
@@ -91,125 +97,120 @@ DUREES_MANUELLES = {
     "PRETE A TOUT": 106,
     "SEULES LES BETES": 117,
     "UNTIL I KILL YOU": 90,
-
 }
 
 
 # ============================================================
-# NETTOYAGE DES PRÉFIXES
+# PATTERN DES SÉANCES
 # ============================================================
 
-def supprimer_prefixe_categorie(titre):
-
-    titre = titre.strip()
-
-    for categorie in CATEGORIES:
-
-        prefixe = categorie + " "
-
-        if titre.startswith(prefixe):
-            titre = titre[len(prefixe):]
-            break
-
-    return titre.strip()
+PATTERN_SEANCE = re.compile(
+    r"(Mar\s*31|Mer\s*1|Jeu\s*2|Ven\s*3|Sam\s*4|Dim\s*5)"
+    r"\s*-\s*"
+    r"(\d{1,2}h\d{2})"
+    r"\s*-\s*"
+    r"(Salle\s+\d+)",
+    re.IGNORECASE,
+)
 
 
 # ============================================================
 # NORMALISATION DES TITRES
 # ============================================================
 
-def normaliser_titre(titre):
+def supprimer_prefixe_categorie(titre):
+    """
+    Supprime une catégorie éventuellement présente
+    devant le titre.
+    """
 
     if not titre:
         return ""
 
-    # Majuscules
+    titre = titre.strip()
+
+    for categorie in CATEGORIES:
+
+        if titre.upper().startswith(categorie + " "):
+            titre = titre[len(categorie):].strip()
+            break
+
+    return titre
+
+
+def normaliser_titre(titre):
+    """
+    Corrige les anomalies d'espacement produites
+    par l'extraction PDF.
+    """
+
+    if not titre:
+        return ""
+
     titre = titre.upper()
 
-    # Suppression des préfixes de catégorie
+    titre = re.sub(r"\s+", " ", titre).strip()
+
     titre = supprimer_prefixe_categorie(titre)
 
-    # Espaces multiples
-    titre = re.sub(r"\s+", " ", titre)
-
     # --------------------------------------------------------
-    # Corrections connues du PDF
+    # Corrections récurrentes du PDF
     # --------------------------------------------------------
 
     corrections = {
-
         "L E ": "LE ",
         "L A ": "LA ",
         "L ES ": "LES ",
-
         "D U ": "DU ",
         "D ES ": "DES ",
         "D E ": "DE ",
-
         "M EMORIES": "MEMORIES",
         "M ORTE": "MORTE",
         "M I AMOR": "MI AMOR",
-
         "L ES SILENCES": "LES SILENCES",
         "L ES CRIMES": "LES CRIMES",
         "L E MAURE": "LE MAURE",
-
     }
 
-    for ancienne, nouvelle in corrections.items():
-        titre = titre.replace(ancienne, nouvelle)
+    for ancien, nouveau in corrections.items():
+        titre = titre.replace(ancien, nouveau)
 
     # --------------------------------------------------------
-    # Corrections explicites
+    # Corrections particulières connues
     # --------------------------------------------------------
 
     corrections_finales = {
-
-        "M EMORIES OF MURDER":
-            "MEMORIES OF MURDER",
-
-        "M ORTE CUCINA":
-            "MORTE CUCINA",
-
-        "M I AMOR":
-            "MI AMOR",
-
-        "L ES CRIMES DE SNOWTOWN":
-            "LES CRIMES DE SNOWTOWN",
-
-        "L ES SILENCES DE RIYAD":
-            "LES SILENCES DE RIYAD",
-
-        "L E MAURE DE KARATAS":
-            "LE MAURE DE KARATAS",
-
+        "M EMORIES OF MURDER": "MEMORIES OF MURDER",
+        "M ORTE CUCINA": "MORTE CUCINA",
+        "M I AMOR": "MI AMOR",
+        "L ES CRIMES DE SNOWTOWN": "LES CRIMES DE SNOWTOWN",
+        "L ES SILENCES DE RIYAD": "LES SILENCES DE RIYAD",
+        "L E MAURE DE KARATAS": "LE MAURE DE KARATAS",
     }
 
-    for ancienne, nouvelle in corrections_finales.items():
-        titre = titre.replace(ancienne, nouvelle)
+    for ancien, nouveau in corrections_finales.items():
+        titre = titre.replace(ancien, nouveau)
+
+    titre = re.sub(r"\s+", " ", titre)
 
     return titre.strip()
 
 
-# ============================================================
-# CLÉ DE COMPARAISON DES TITRES
-#
-# Cette fonction permet de comparer :
-#
-# J’AI RENCONTRÉ LE DIABLE
-#
-# avec :
-#
-# J AI RENCONTRE LE DIABLE
-#
-# ============================================================
-
 def cle_titre(titre):
+    """
+    Génère une clé comparable :
+
+    J’AI RENCONTRÉ LE DIABLE
+    devient
+    JAIRENCONTRELEDIABLE
+    """
 
     titre = normaliser_titre(titre)
 
-    # Suppression des accents
-    titre = unicodedata.normalize("NFD", titre)
+    titre = unicodedata.normalize(
+        "NFD",
+        titre,
+    )
 
     titre = "".join(
         caractere
@@ -217,62 +218,120 @@ def cle_titre(titre):
         if unicodedata.category(caractere) != "Mn"
     )
 
-    # Apostrophes / ponctuation / espaces
-    titre = re.sub(r"[^A-Z0-9]", "", titre)
+    titre = re.sub(
+        r"[^A-Z0-9]",
+        "",
+        titre,
+    )
 
     return titre
 
 
 # ============================================================
-# EXTRACTION D'UNE DURÉE
-#
-# Exemples :
-#
-# (1h23)
-# (2h07)
-# (2h)
-# (32’)
-#
-# Retourne une durée en minutes.
+# DURÉES
 # ============================================================
 
 def extraire_duree(texte):
+    """
+    Extrait une durée depuis différents formats.
+
+    Exemples :
+        (1h30)
+        (1 h 30)
+        (90')
+        (90’)
+        1h30
+    """
 
     if not texte:
         return None
 
-    # Exemple : (1h23)
+    # --------------------------------------------------------
+    # Format 1h30 / 1 h 30 / (1h30)
+    # --------------------------------------------------------
+
     match = re.search(
-        r"\((\d+)\s*h\s*(\d{2})?\s*\)",
+        r"(?<!\d)"
+        r"(\d{1,2})\s*h\s*(\d{1,2})"
+        r"(?!\d)",
         texte,
-        re.IGNORECASE
+        re.IGNORECASE,
     )
 
     if match:
 
         heures = int(match.group(1))
-        minutes = int(match.group(2) or 0)
+        minutes = int(match.group(2))
 
-        return heures * 60 + minutes
+        # Sécurité pour éviter qu'une heure de séance
+        # soit interprétée comme une durée aberrante.
+        if heures <= 5 and minutes < 60:
+            return heures * 60 + minutes
 
-    # Exemple : (32’)
+    # --------------------------------------------------------
+    # Format 1h
+    # --------------------------------------------------------
+
     match = re.search(
-        r"\((\d+)\s*['’]\)",
-        texte
+        r"(?<!\d)"
+        r"(\d{1,2})\s*h"
+        r"(?!\s*\d)",
+        texte,
+        re.IGNORECASE,
     )
 
     if match:
 
-        return int(match.group(1))
+        heures = int(match.group(1))
+
+        if heures <= 5:
+            return heures * 60
+
+    # --------------------------------------------------------
+    # Format 90' ou 90’
+    # --------------------------------------------------------
+
+    match = re.search(
+        r"(?<!\d)"
+        r"(\d{1,3})\s*['’]"
+        r"(?!\d)",
+        texte,
+    )
+
+    if match:
+
+        minutes = int(match.group(1))
+
+        if 1 <= minutes <= 300:
+            return minutes
+
+    # --------------------------------------------------------
+    # Format 90 min
+    # --------------------------------------------------------
+
+    match = re.search(
+        r"(?<!\d)"
+        r"(\d{1,3})\s*(?:MIN|MN)"
+        r"(?![A-Z])",
+        texte,
+        re.IGNORECASE,
+    )
+
+    if match:
+
+        minutes = int(match.group(1))
+
+        if 1 <= minutes <= 300:
+            return minutes
 
     return None
 
 
-# ============================================================
-# FORMATAGE DE LA DURÉE
-# ============================================================
-
-def format_duree(minutes):
+def duree_formattee(minutes):
+    """
+    98 -> 1h38
+    24 -> 24 min
+    """
 
     if minutes is None:
         return ""
@@ -287,624 +346,1121 @@ def format_duree(minutes):
 
 
 # ============================================================
-# EXTRACTION D'UN FILM + CATÉGORIE
-#
-# Exemple :
-#
-# COMP RED CODE BLUE (2h28)
-#
-# devient :
-#
-# catégorie = COMP
-# film      = RED CODE BLUE
+# TÉLÉCHARGEMENT
 # ============================================================
 
-def extraire_film_et_categorie(ligne):
+def telecharger_pdf():
 
-    ligne = ligne.strip()
-
-    pattern = (
-        r"^(COMP|CORSE|SK|GVS|FOCUS|SANG|AVP|PCC|SÉRIE)"
-        r"\s+(.+?)"
-        r"\s*\("
-    )
-
-    match = re.match(
-        pattern,
-        ligne
-    )
-
-    if match:
-
-        categorie = match.group(1)
-        film = match.group(2).strip()
-
-        return categorie, film
-
-    return None, None
-
-
-# ============================================================
-# EXTRACTION D'UNE SÉANCE
-#
-# Exemple :
-#
-# Mer 1 - 14h30 - Salle 1
-#
-# devient :
-#
-# jour   = Mer 1
-# heure  = 14h30
-# salle  = Salle 1
-# ============================================================
-
-PATTERN_SEANCE = re.compile(
-    r"(Mar 31|Mer 1|Jeu 2|Ven 3|Sam 4|Dim 5)"
-    r"\s*-\s*"
-    r"(\d{1,2}h\d{2})"
-    r"\s*-\s*"
-    r"(Salle[^•\n]+)"
-)
-
-
-# ============================================================
-# DÉBUT DU PROGRAMME
-# ============================================================
-
-print()
-print("=" * 70)
-print("              REIMS POLAR 2026")
-print("=" * 70)
-
-
-# ============================================================
-# TÉLÉCHARGEMENT DU PDF
-# ============================================================
-
-print()
-print("Téléchargement du PDF...")
-
-try:
+    print("Téléchargement du PDF...")
 
     response = requests.get(
         URL,
-        timeout=30
+        timeout=30,
     )
 
     response.raise_for_status()
 
-except requests.RequestException as erreur:
+    with open(
+        PDF_FILE,
+        "wb",
+    ) as fichier:
 
-    print()
-    print("❌ Impossible de télécharger le PDF.")
-    print(erreur)
-
-    raise SystemExit(1)
-
-
-PDF_FILE.write_bytes(
-    response.content
-)
-
-print(f"✓ PDF téléchargé : {PDF_FILE}")
-
-
-# ============================================================
-# VARIABLES
-# ============================================================
-
-films = {}
-seances = []
-
-
-# ============================================================
-# OUVERTURE DU PDF
-# ============================================================
-
-print()
-print("Analyse du PDF...")
-
-
-with pdfplumber.open(PDF_FILE) as pdf:
+        fichier.write(
+            response.content
+        )
 
     print(
-        f"✓ {len(pdf.pages)} pages détectées"
+        f"✓ PDF téléchargé : {PDF_FILE}"
     )
 
 
-    # ========================================================
-    # PREMIÈRE PASSE
-    #
-    # Recherche des films et de leurs durées.
-    # ========================================================
+# ============================================================
+# LECTURE DU PDF
+# ============================================================
 
-    print()
-    print("Recherche des films et des durées...")
+def lire_pages_pdf(pdf):
+    """
+    Extrait une seule fois le texte de toutes les pages.
+    """
 
-    for numero_page, page in enumerate(
+    pages = []
+
+    for numero, page in enumerate(
         pdf.pages,
-        start=1
+        start=1,
     ):
 
-        texte = page.extract_text()
+        texte = page.extract_text() or ""
 
-        if not texte:
-            continue
+        pages.append(
+            {
+                "numero": numero,
+                "texte": texte,
+                "lignes": texte.splitlines(),
+            }
+        )
 
-        lignes = texte.splitlines()
+    return pages
 
-        for ligne in lignes:
+
+# ============================================================
+# EXTRACTION DES SÉANCES
+# ============================================================
+
+def extraire_seances(pages):
+    """
+    Les titres de référence sont récupérés directement
+    depuis la section SÉANCES PAR FILM.
+
+    C'est cette section qui constitue notre référence
+    principale pour les titres.
+    """
+
+    seances = []
+
+    dans_section = False
+
+    film_courant = None
+    categorie_courante = ""
+
+    for page in pages:
+
+        for ligne in page["lignes"]:
 
             ligne = ligne.strip()
 
             if not ligne:
                 continue
 
-            duree = extraire_duree(ligne)
+            # ------------------------------------------------
+            # Début de la section
+            # ------------------------------------------------
+
+            if "SÉANCES PAR FILM" in ligne.upper():
+
+                dans_section = True
+                continue
+
+            if not dans_section:
+                continue
+
+            correspondances = list(
+                PATTERN_SEANCE.finditer(
+                    ligne
+                )
+            )
+
+            if not correspondances:
+                continue
+
+            # ------------------------------------------------
+            # Tout ce qui se trouve avant la première séance
+            # peut être un nouveau film.
+            # ------------------------------------------------
+
+            premiere_seance = correspondances[0]
+
+            texte_avant = ligne[
+                :premiere_seance.start()
+            ]
+
+            texte_avant = (
+                texte_avant
+                .replace("•", " ")
+                .strip()
+            )
+
+            if texte_avant:
+
+                nouvelle_categorie = ""
+                nouveau_titre = texte_avant
+
+                for categorie in CATEGORIES:
+
+                    pattern = re.compile(
+                        rf"^{re.escape(categorie)}\s+",
+                        re.IGNORECASE,
+                    )
+
+                    if pattern.search(
+                        nouveau_titre
+                    ):
+
+                        nouvelle_categorie = categorie
+
+                        nouveau_titre = pattern.sub(
+                            "",
+                            nouveau_titre,
+                            count=1,
+                        )
+
+                        break
+
+                nouveau_titre = normaliser_titre(
+                    nouveau_titre
+                )
+
+                if nouveau_titre:
+
+                    film_courant = nouveau_titre
+                    categorie_courante = (
+                        nouvelle_categorie
+                    )
+
+            # ------------------------------------------------
+            # Ajout des séances
+            # ------------------------------------------------
+
+            if not film_courant:
+                continue
+
+            for match in correspondances:
+
+                jour = re.sub(
+                    r"\s+",
+                    " ",
+                    match.group(1),
+                )
+
+                # Normalisation de la casse
+                jour = jour.title()
+
+                # "Mer 1" reste correct avec title()
+                # mais on s'assure de nos clés.
+                correspondance_jour = None
+
+                for jour_reference in DATES:
+
+                    if (
+                        jour.lower()
+                        == jour_reference.lower()
+                    ):
+
+                        correspondance_jour = (
+                            jour_reference
+                        )
+
+                        break
+
+                if not correspondance_jour:
+                    continue
+
+                heure = match.group(2)
+
+                salle = re.sub(
+                    r"\s+",
+                    " ",
+                    match.group(3),
+                )
+
+                salle = salle.replace(
+                    "salle",
+                    "Salle",
+                )
+
+                seances.append(
+                    {
+                        "film": film_courant,
+                        "categorie": categorie_courante,
+                        "duree": "",
+                        "duree_minutes": None,
+                        "date": DATES[
+                            correspondance_jour
+                        ],
+                        "jour": correspondance_jour,
+                        "heure": heure,
+                        "salle": salle,
+                    }
+                )
+
+    return seances
+
+
+# ============================================================
+# RECHERCHE AUTOMATIQUE DES DURÉES
+# ============================================================
+
+def construire_candidats_durees(pages):
+    """
+    Construit une liste de toutes les lignes du PDF
+    contenant une durée potentielle.
+    """
+
+    candidats = []
+
+    for page in pages:
+
+        # Les dernières pages correspondent à
+        # "SÉANCES PAR FILM" et contiennent surtout
+        # les heures des projections.
+        #
+        # On évite ainsi de confondre 20h30 avec
+        # une durée de 20 h 30.
+        if "SÉANCES PAR FILM" in page["texte"].upper():
+            continue
+
+        for ligne in page["lignes"]:
+
+            ligne = ligne.strip()
+
+            if not ligne:
+                continue
+
+            duree = extraire_duree(
+                ligne
+            )
 
             if duree is None:
                 continue
 
-            categorie, film = (
-                extraire_film_et_categorie(ligne)
+            candidats.append(
+                {
+                    "ligne": ligne,
+                    "cle": cle_titre(ligne),
+                    "duree": duree,
+                    "page": page["numero"],
+                }
             )
 
-            if not film:
-                continue
-
-            film = normaliser_titre(film)
-
-            cle = cle_titre(film)
-
-            films[cle] = {
-                "film": film,
-                "categorie": categorie,
-                "duree": duree,
-            }
+    return candidats
 
 
-    print(
-        f"✓ {len(films)} films avec durée détectés"
+def trouver_duree_automatique(
+    titre,
+    candidats,
+):
+    """
+    Recherche le titre d'un film dans les lignes
+    comportant une durée.
+
+    Si plusieurs résultats correspondent, on choisit
+    celui dont la ligne ressemble le plus au titre
+    recherché.
+    """
+
+    cle_film = cle_titre(
+        titre
     )
 
+    if not cle_film:
+        return None
 
-    # ========================================================
-    # DEUXIÈME PASSE
-    #
-    # Recherche des pages "SÉANCES PAR FILM".
-    # ========================================================
+    correspondances = []
 
-    print()
-    print("Recherche des séances...")
+    for candidat in candidats:
 
-    for numero_page, page in enumerate(
-        pdf.pages,
-        start=1
-    ):
+        cle_ligne = candidat["cle"]
 
-        texte = page.extract_text()
+        if cle_film in cle_ligne:
 
-        if not texte:
-            continue
-
-        if "SÉANCES PAR FILM" not in texte:
-            continue
-
-        print(
-            f"✓ Page {numero_page} : séances par film"
-        )
-
-        lignes = texte.splitlines()
-
-        categorie_actuelle = None
-        film_actuel = None
-
-
-        for ligne in lignes:
-
-            ligne = ligne.strip()
-
-            if not ligne:
-                continue
-
-            if ligne == "SÉANCES PAR FILM":
-                continue
-
-
-            # =================================================
-            # NOUVEAU FILM
-            # =================================================
-
-            match_film = re.match(
-                r"^(COMP|CORSE|SK|GVS|FOCUS|SANG|AVP|PCC|SÉRIE)"
-                r"\s+(.+?)(?:\s*•\s*(.*))?$",
-                ligne
+            # Plus la différence de taille est faible,
+            # plus la ligne ressemble au titre attendu.
+            difference = abs(
+                len(cle_ligne)
+                - len(cle_film)
             )
 
-            if match_film:
-
-                categorie_actuelle = (
-                    match_film.group(1)
+            correspondances.append(
+                (
+                    difference,
+                    candidat["duree"],
+                    candidat["ligne"],
                 )
+            )
 
-                film_actuel = normaliser_titre(
-                    match_film.group(2)
-                )
+    if not correspondances:
+        return None
 
-                reste = match_film.group(3)
+    correspondances.sort(
+        key=lambda x: x[0]
+    )
 
-
-                # ------------------------------------------------
-                # Une séance peut être sur la même ligne
-                # ------------------------------------------------
-
-                if reste:
-
-                    matches = PATTERN_SEANCE.findall(
-                        reste
-                    )
-
-                    for (
-                        jour,
-                        heure,
-                        salle
-                    ) in matches:
-
-                        seances.append({
-
-                            "categorie":
-                                categorie_actuelle,
-
-                            "film":
-                                film_actuel,
-
-                            "jour":
-                                jour,
-
-                            "date":
-                                DATES[jour],
-
-                            "heure":
-                                heure,
-
-                            "salle":
-                                salle.strip(),
-
-                        })
-
-                continue
-
-
-            # =================================================
-            # SÉANCES SUIVANTES
-            # =================================================
-
-            if film_actuel:
-
-                matches = PATTERN_SEANCE.findall(
-                    ligne
-                )
-
-                for (
-                    jour,
-                    heure,
-                    salle
-                ) in matches:
-
-                    seances.append({
-
-                        "categorie":
-                            categorie_actuelle,
-
-                        "film":
-                            film_actuel,
-
-                        "jour":
-                            jour,
-
-                        "date":
-                            DATES[jour],
-
-                        "heure":
-                            heure,
-
-                        "salle":
-                            salle.strip(),
-
-                    })
+    return correspondances[0][1]
 
 
 # ============================================================
 # ASSOCIATION DES DURÉES
 # ============================================================
 
-print()
-print("Association des durées...")
-print()
+def associer_durees(
+    seances,
+    pages,
+):
+    """
+    Associe une durée à chaque film.
 
+    Ordre :
+        1. Recherche dans le PDF
+        2. Dictionnaire manuel
+        3. Signalement si toujours introuvable
+    """
 
-for seance in seances:
+    print()
+    print("Association des durées...")
 
-    cle = cle_titre(
-        seance["film"]
+    candidats = construire_candidats_durees(
+        pages
     )
 
+    # --------------------------------------------------------
+    # Dictionnaire manuel avec les mêmes clés que nos films
+    # --------------------------------------------------------
 
-    # ========================================================
-    # 1. RECHERCHE AUTOMATIQUE
-    # ========================================================
+    durees_manuelles_normalisees = {
+        cle_titre(titre): duree
+        for titre, duree
+        in DUREES_MANUELLES.items()
+    }
 
-    film_info = films.get(cle)
+    # --------------------------------------------------------
+    # Une seule recherche par film
+    # --------------------------------------------------------
 
+    films_uniques = {}
 
-    if film_info:
+    for seance in seances:
 
-        seance["duree_minutes"] = (
-            film_info["duree"]
+        cle = cle_titre(
+            seance["film"]
         )
 
-        seance["duree"] = format_duree(
-            film_info["duree"]
+        if cle not in films_uniques:
+
+            films_uniques[cle] = (
+                seance["film"]
+            )
+
+    durees_films = {}
+
+    for cle, titre in films_uniques.items():
+
+        # ----------------------------------------------------
+        # 1. Recherche automatique
+        # ----------------------------------------------------
+
+        duree = trouver_duree_automatique(
+            titre,
+            candidats,
         )
 
-        continue
+        source = "PDF"
 
+        # ----------------------------------------------------
+        # 2. Fallback manuel
+        # ----------------------------------------------------
 
-    # ========================================================
-    # 2. RECHERCHE DANS LES DURÉES DE SECOURS
-    # ========================================================
+        if duree is None:
 
-    if cle in DUREES_MANUELLES:
+            duree = (
+                durees_manuelles_normalisees
+                .get(cle)
+            )
 
-        duree = DUREES_MANUELLES[cle]
+            if duree is not None:
+                source = "manuel"
 
-        seance["duree_minutes"] = duree
+        # ----------------------------------------------------
+        # Résultat
+        # ----------------------------------------------------
 
-        seance["duree"] = format_duree(
+        if duree is None:
+
+            print(
+                f"⚠ Durée introuvable : "
+                f"{titre}"
+            )
+
+        else:
+
+            if source == "manuel":
+
+                print(
+                    f"✓ Durée manuelle : "
+                    f"{titre} → "
+                    f"{duree_formattee(duree)}"
+                )
+
+        durees_films[cle] = (
             duree
         )
 
-        print(
-            f"✓ Durée corrigée : "
-            f"{seance['film']} → "
-            f"{seance['duree']}"
+    # --------------------------------------------------------
+    # Application aux séances
+    # --------------------------------------------------------
+
+    for seance in seances:
+
+        cle = cle_titre(
+            seance["film"]
         )
 
-        continue
-
-
-    # ========================================================
-    # 3. DURÉE TOUJOURS INTROUVABLE
-    # ========================================================
-
-    seance["duree_minutes"] = None
-    seance["duree"] = ""
-
-    print(
-        f"⚠ Durée introuvable : "
-        f"{seance['film']}"
-    )
-
-
-# ============================================================
-# CONTRÔLE FINAL
-# ============================================================
-
-films_sans_duree = sorted(
-    set(
-        seance["film"]
-        for seance in seances
-        if not seance["duree"]
-    )
-)
-
-
-print()
-print("=" * 70)
-print("CONTRÔLE DES DURÉES")
-print("=" * 70)
-
-
-if films_sans_duree:
-
-    print()
-
-    for film in films_sans_duree:
-
-        print(
-            f"⚠ {film}"
+        duree = durees_films.get(
+            cle
         )
 
-else:
+        seance[
+            "duree_minutes"
+        ] = duree
 
-    print()
-    print(
-        "✓ Toutes les séances disposent "
-        "d'une durée."
+        seance[
+            "duree"
+        ] = duree_formattee(
+            duree
+        )
+
+    return seances
+
+
+# ============================================================
+# DOUBLONS
+# ============================================================
+
+def supprimer_doublons(
+    seances,
+):
+
+    uniques = {}
+
+    for seance in seances:
+
+        cle = (
+            cle_titre(
+                seance["film"]
+            ),
+            seance["date"],
+            seance["heure"],
+            seance["salle"],
+        )
+
+        uniques[cle] = seance
+
+    return list(
+        uniques.values()
     )
 
 
 # ============================================================
-# SUPPRESSION DES DOUBLONS
+# TRI
 # ============================================================
 
-seances_uniques = []
+def cle_tri_seance(
+    seance,
+):
 
-seances_vues = set()
+    try:
 
+        date = datetime.strptime(
+            seance["date"],
+            "%d/%m/%Y",
+        )
 
-for seance in seances:
+    except ValueError:
 
-    cle = (
-        seance["film"],
-        seance["date"],
-        seance["heure"],
+        date = datetime.max
+
+    try:
+
+        heure = datetime.strptime(
+            seance["heure"],
+            "%Hh%M",
+        ).time()
+
+        minutes = (
+            heure.hour * 60
+            + heure.minute
+        )
+
+    except ValueError:
+
+        minutes = 9999
+
+    salle_match = re.search(
+        r"\d+",
         seance["salle"],
     )
 
-    if cle in seances_vues:
-        continue
+    numero_salle = (
+        int(salle_match.group())
+        if salle_match
+        else 9999
+    )
 
-    seances_vues.add(cle)
-
-    seances_uniques.append(
-        seance
+    return (
+        date,
+        minutes,
+        numero_salle,
+        seance["film"],
     )
 
 
-seances = seances_uniques
+def trier_seances(
+    seances,
+):
+
+    return sorted(
+        seances,
+        key=cle_tri_seance,
+    )
 
 
 # ============================================================
-# TRI DES SÉANCES
+# GÉNÉRATION EXCEL
 # ============================================================
 
-ordre_dates = {
-    "31/03/2026": 1,
-    "01/04/2026": 2,
-    "02/04/2026": 3,
-    "03/04/2026": 4,
-    "04/04/2026": 5,
-    "05/04/2026": 6,
-}
+def generer_excel(
+    seances,
+):
+
+    dataframe = pd.DataFrame(
+        seances
+    )
+
+    colonnes = [
+        "film",
+        "categorie",
+        "duree",
+        "duree_minutes",
+        "date",
+        "jour",
+        "heure",
+        "salle",
+    ]
+
+    dataframe = dataframe[
+        colonnes
+    ]
+
+    dataframe.to_excel(
+        EXCEL_FILE,
+        index=False,
+    )
+
+    print(
+        f"✓ Excel généré : "
+        f"{EXCEL_FILE}"
+    )
 
 
-seances.sort(
-    key=lambda s: (
-        ordre_dates.get(
-            s["date"],
-            99
+# ============================================================
+# GÉNÉRATION JSON
+# ============================================================
+
+def generer_json(
+    seances,
+):
+
+    films = {}
+
+    for seance in seances:
+
+        titre = seance[
+            "film"
+        ]
+
+        cle = cle_titre(
+            titre
+        )
+
+        identifiant = (
+            cle.lower()
+        )
+
+        if cle not in films:
+
+            films[cle] = {
+                "id": identifiant,
+                "titre": titre,
+                "categorie": seance[
+                    "categorie"
+                ],
+                "duree": seance[
+                    "duree"
+                ],
+                "duree_minutes": seance[
+                    "duree_minutes"
+                ],
+                "seances": [],
+            }
+
+        # ----------------------------------------------------
+        # Date ISO
+        # ----------------------------------------------------
+
+        try:
+
+            date_iso = datetime.strptime(
+                seance["date"],
+                "%d/%m/%Y",
+            ).strftime(
+                "%Y-%m-%d"
+            )
+
+        except ValueError:
+
+            date_iso = (
+                seance["date"]
+            )
+
+        # ----------------------------------------------------
+        # Heure
+        # ----------------------------------------------------
+
+        heure_web = (
+            seance["heure"]
+            .replace(
+                "h",
+                ":",
+            )
+        )
+
+        try:
+
+            heures, minutes = (
+                heure_web.split(":")
+            )
+
+            heure_minutes = (
+                int(heures) * 60
+                + int(minutes)
+            )
+
+        except (
+            ValueError,
+            AttributeError,
+        ):
+
+            heure_minutes = None
+
+        # ----------------------------------------------------
+        # Heure de fin
+        # ----------------------------------------------------
+
+        heure_fin_minutes = None
+        heure_fin = None
+
+        duree_minutes = seance[
+            "duree_minutes"
+        ]
+
+        if (
+            heure_minutes is not None
+            and duree_minutes is not None
+        ):
+
+            heure_fin_minutes = (
+                heure_minutes
+                + duree_minutes
+            )
+
+            heures_fin = (
+                heure_fin_minutes // 60
+            )
+
+            minutes_fin = (
+                heure_fin_minutes % 60
+            )
+
+            heure_fin = (
+                f"{heures_fin:02d}:"
+                f"{minutes_fin:02d}"
+            )
+
+        films[cle][
+            "seances"
+        ].append(
+            {
+                "date": date_iso,
+                "jour": seance[
+                    "jour"
+                ],
+                "heure": heure_web,
+                "heure_minutes": heure_minutes,
+                "heure_fin": heure_fin,
+                "heure_fin_minutes": (
+                    heure_fin_minutes
+                ),
+                "salle": seance[
+                    "salle"
+                ],
+            }
+        )
+
+    # --------------------------------------------------------
+    # Liste des films
+    # --------------------------------------------------------
+
+    liste_films = list(
+        films.values()
+    )
+
+    liste_films.sort(
+        key=lambda film:
+        film["titre"]
+    )
+
+    # --------------------------------------------------------
+    # Tri des séances de chaque film
+    # --------------------------------------------------------
+
+    for film in liste_films:
+
+        film["seances"].sort(
+            key=lambda seance: (
+                seance["date"],
+                (
+                    seance[
+                        "heure_minutes"
+                    ]
+                    if seance[
+                        "heure_minutes"
+                    ] is not None
+                    else 9999
+                ),
+            )
+        )
+
+    # --------------------------------------------------------
+    # JSON final
+    # --------------------------------------------------------
+
+    return {
+        "festival": "Reims Polar",
+        "annee": 2026,
+        "total_films": len(
+            liste_films
         ),
-        s["heure"],
-        s["salle"],
-        s["film"],
+        "total_seances": sum(
+            len(
+                film["seances"]
+            )
+            for film in liste_films
+        ),
+        "films": liste_films,
+    }
+
+
+# ============================================================
+# SAUVEGARDE JSON
+# ============================================================
+
+def sauvegarder_json(
+    data,
+):
+
+    with open(
+        JSON_FILE,
+        "w",
+        encoding="utf-8",
+    ) as fichier:
+
+        json.dump(
+            data,
+            fichier,
+            ensure_ascii=False,
+            indent=2,
+        )
+
+    with open(
+        WEB_JSON_FILE,
+        "w",
+        encoding="utf-8",
+    ) as fichier:
+
+        json.dump(
+            data,
+            fichier,
+            ensure_ascii=False,
+            indent=2,
+        )
+
+    print(
+        f"✓ JSON généré : "
+        f"{JSON_FILE}"
     )
-)
+
+    print(
+        f"✓ JSON web généré : "
+        f"{WEB_JSON_FILE}"
+    )
 
 
 # ============================================================
-# CRÉATION DE L'EXCEL
+# PROGRAMME PRINCIPAL
 # ============================================================
 
-print()
-print("Création du fichier Excel...")
+def main():
 
+    print()
+    print(
+        "========================================"
+    )
+    print(
+        "      REIMS POLAR 2026 - SCRAPER"
+    )
+    print(
+        "========================================"
+    )
+    print()
 
-workbook = Workbook()
+    # --------------------------------------------------------
+    # Création des dossiers
+    # --------------------------------------------------------
 
-sheet = workbook.active
+    PDF_DIR.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
 
-sheet.title = "Séances"
+    OUTPUT_DIR.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    WEB_DATA_DIR.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    # --------------------------------------------------------
+    # PDF
+    # --------------------------------------------------------
+
+    telecharger_pdf()
+
+    print()
+    print("Lecture du PDF...")
+
+    with pdfplumber.open(
+        PDF_FILE
+    ) as pdf:
+
+        print(
+            f"✓ Nombre de pages : "
+            f"{len(pdf.pages)}"
+        )
+
+        pages = lire_pages_pdf(
+            pdf
+        )
+
+    # --------------------------------------------------------
+    # Séances
+    # --------------------------------------------------------
+
+    print()
+    print(
+        "========================================"
+    )
+    print(
+        "1. EXTRACTION DES SÉANCES"
+    )
+    print(
+        "========================================"
+    )
+
+    seances = extraire_seances(
+        pages
+    )
+
+    print(
+        f"✓ {len(seances)} séance(s) "
+        f"extraite(s)"
+    )
+
+    # --------------------------------------------------------
+    # Doublons
+    # --------------------------------------------------------
+
+    nombre_avant = len(
+        seances
+    )
+
+    seances = supprimer_doublons(
+        seances
+    )
+
+    nombre_apres = len(
+        seances
+    )
+
+    print(
+        f"✓ "
+        f"{nombre_avant - nombre_apres} "
+        f"doublon(s) supprimé(s)"
+    )
+
+    # --------------------------------------------------------
+    # Durées
+    # --------------------------------------------------------
+
+    print()
+    print(
+        "========================================"
+    )
+    print(
+        "2. ASSOCIATION DES DURÉES"
+    )
+    print(
+        "========================================"
+    )
+
+    seances = associer_durees(
+        seances,
+        pages,
+    )
+
+    # --------------------------------------------------------
+    # Tri
+    # --------------------------------------------------------
+
+    seances = trier_seances(
+        seances
+    )
+
+    # --------------------------------------------------------
+    # Statistiques durées
+    # --------------------------------------------------------
+
+    films_uniques = {}
+
+    for seance in seances:
+
+        cle = cle_titre(
+            seance["film"]
+        )
+
+        films_uniques[cle] = (
+            seance
+        )
+
+    films_sans_duree = [
+        film["film"]
+        for film
+        in films_uniques.values()
+        if film[
+            "duree_minutes"
+        ] is None
+    ]
+
+    print()
+
+    if films_sans_duree:
+
+        print(
+            f"⚠ {len(films_sans_duree)} "
+            f"film(s) sans durée :"
+        )
+
+        for film in sorted(
+            films_sans_duree
+        ):
+
+            print(
+                f"   - {film}"
+            )
+
+    else:
+
+        print(
+            "✓ Toutes les durées "
+            "ont été trouvées."
+        )
+
+    # --------------------------------------------------------
+    # Excel
+    # --------------------------------------------------------
+
+    print()
+    print(
+        "========================================"
+    )
+    print(
+        "3. GÉNÉRATION EXCEL"
+    )
+    print(
+        "========================================"
+    )
+
+    generer_excel(
+        seances
+    )
+
+    # --------------------------------------------------------
+    # JSON
+    # --------------------------------------------------------
+
+    print()
+    print(
+        "========================================"
+    )
+    print(
+        "4. GÉNÉRATION JSON"
+    )
+    print(
+        "========================================"
+    )
+
+    data_json = generer_json(
+        seances
+    )
+
+    sauvegarder_json(
+        data_json
+    )
+
+    # --------------------------------------------------------
+    # Résumé
+    # --------------------------------------------------------
+
+    print()
+    print(
+        "========================================"
+    )
+    print(
+        "       EXTRACTION TERMINÉE"
+    )
+    print(
+        "========================================"
+    )
+
+    print(
+        f"Films   : "
+        f"{data_json['total_films']}"
+    )
+
+    print(
+        f"Séances : "
+        f"{data_json['total_seances']}"
+    )
+
+    print(
+        f"Durées manquantes : "
+        f"{len(films_sans_duree)}"
+    )
+
+    print()
+
+    print(
+        f"Excel : {EXCEL_FILE}"
+    )
+
+    print(
+        f"JSON  : {JSON_FILE}"
+    )
+
+    print(
+        f"Web   : {WEB_JSON_FILE}"
+    )
+
+    print()
+    print(
+        "========================================"
+    )
 
 
 # ============================================================
-# EN-TÊTES
+# LANCEMENT
 # ============================================================
 
-headers = [
-    "Catégorie",
-    "Film",
-    "Durée",
-    "Date",
-    "Jour",
-    "Heure",
-    "Salle",
-]
-
-sheet.append(headers)
-
-
-# ============================================================
-# DONNÉES
-# ============================================================
-
-for seance in seances:
-
-    sheet.append([
-
-        seance["categorie"],
-
-        seance["film"],
-
-        seance["duree"],
-
-        seance["date"],
-
-        seance["jour"],
-
-        seance["heure"],
-
-        seance["salle"],
-
-    ])
-
-
-# ============================================================
-# MISE EN FORME
-# ============================================================
-
-sheet.freeze_panes = "A2"
-
-sheet.auto_filter.ref = (
-    sheet.dimensions
-)
-
-
-largeurs = {
-
-    "A": 12,
-
-    "B": 42,
-
-    "C": 12,
-
-    "D": 15,
-
-    "E": 12,
-
-    "F": 10,
-
-    "G": 15,
-
-}
-
-
-for colonne, largeur in largeurs.items():
-
-    sheet.column_dimensions[
-        colonne
-    ].width = largeur
-
-
-# ============================================================
-# SAUVEGARDE
-# ============================================================
-
-workbook.save(
-    EXCEL_FILE
-)
-
-
-# ============================================================
-# RÉSUMÉ FINAL
-# ============================================================
-
-print()
-print("=" * 70)
-print("                    TERMINÉ")
-print("=" * 70)
-
-print(
-    f"✓ Films détectés : {len(films)}"
-)
-
-print(
-    f"✓ Séances détectées : {len(seances)}"
-)
-
-print(
-    f"✓ Excel : {EXCEL_FILE}"
-)
-
-print("=" * 70)
-print()
+if __name__ == "__main__":
+    main()
