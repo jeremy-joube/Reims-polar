@@ -9,5 +9,5 @@
 
 🌐 Site
 
-[https://jeremy-joube.github.io/Portfolio/](https://jeremy-joube.github.io/Portfolio/)
+[https://jeremy-joube.github.io/Reims-polar/web/](https://jeremy-joube.github.io/Reims-polar/web/)
 
