@@ -9,337 +9,466 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <meta
-        name="description"
-        content="Planificateur Reims Polar 2026"
-    >
-
-    <title>REIMS POLAR — Planner 2026</title>
+    <title>Reims Polar Planner</title>
 
     <link
         rel="stylesheet"
-        href="./css/style.css"
+        href="css/style.css"
     >
 </head>
 
 <body>
 
-    <!-- ======================================================
-         HEADER
-    ======================================================= -->
+<header class="site-header">
 
-    <header class="site-header">
+    <div class="header-content">
 
-        <div class="header-inner">
+        <div>
+            <p class="eyebrow">
+                REIMS POLAR · 2026
+            </p>
 
-            <div class="brand">
+            <h1>
+                Mon Planning
+            </h1>
 
-                <span class="brand-small">
-                    REIMS POLAR
-                </span>
-
-                <h1>
-                    PLANNER
-                </h1>
-
-                <span class="brand-year">
-                    2026
-                </span>
-
-            </div>
-
-
-            <div class="header-stats">
-
-                <div class="header-stat">
-
-                    <span
-                        id="selected-films-count"
-                        class="header-stat-number"
-                    >
-                        0
-                    </span>
-
-                    <span class="header-stat-label">
-                        films
-                    </span>
-
-                </div>
-
-
-                <div class="header-stat">
-
-                    <span
-                        id="selected-sessions-count"
-                        class="header-stat-number"
-                    >
-                        0
-                    </span>
-
-                    <span class="header-stat-label">
-                        séances
-                    </span>
-
-                </div>
-
-            </div>
-
+            <p class="header-description">
+                Construisez votre programme de projections.
+            </p>
         </div>
 
-    </header>
+        <div class="header-stats">
 
-
-    <!-- ======================================================
-         NAVIGATION
-    ======================================================= -->
-
-    <nav class="main-navigation">
-
-        <div class="navigation-inner">
-
-            <button
-                type="button"
-                class="nav-button active"
-                data-view="catalogue"
-            >
-                Catalogue
-            </button>
-
-
-            <button
-                type="button"
-                class="nav-button"
-                data-view="planning"
-            >
-                Mon planning
-            </button>
-
-        </div>
-
-    </nav>
-
-
-    <!-- ======================================================
-         MAIN
-    ======================================================= -->
-
-    <main class="main-content">
-
-
-        <!-- ==================================================
-             CATALOGUE
-        =================================================== -->
-
-        <section
-            id="catalogue-view"
-            class="page-view active"
-        >
-
-            <div class="section-header">
-
-                <div>
-
-                    <span class="section-kicker">
-                        PROGRAMME 2026
-                    </span>
-
-                    <h2>
-                        Catalogue
-                    </h2>
-
-                    <p>
-                        Sélectionnez les films que vous souhaitez
-                        intégrer à votre planning.
-                    </p>
-
-                </div>
-
+            <div class="stat">
+                <span id="selected-films-count">0</span>
+                <small>films</small>
             </div>
 
-
-            <div class="catalogue-controls">
-
-                <div class="search-wrapper">
-
-                    <input
-                        type="search"
-                        id="film-search"
-                        class="search-input"
-                        placeholder="Rechercher un film..."
-                        autocomplete="off"
-                    >
-
-                </div>
-
-
-                <div
-                    id="category-filters"
-                    class="category-filters"
-                >
-                </div>
-
-            </div>
-
-
-            <div
-                id="film-grid"
-                class="film-grid"
-            >
-            </div>
-
-        </section>
-
-
-        <!-- ==================================================
-             PLANNING
-        =================================================== -->
-
-        <section
-            id="planning-view"
-            class="page-view"
-        >
-
-            <div class="section-header">
-
-                <div>
-
-                    <span class="section-kicker">
-                        VOTRE PROGRAMME
-                    </span>
-
-                    <h2>
-                        Mon planning
-                    </h2>
-
-                    <p>
-                        Retrouvez ici toutes les séances
-                        des films sélectionnés.
-                    </p>
-
-                </div>
-
-
-                <button
-                    type="button"
-                    id="clear-selection"
-                    class="danger-button"
-                >
-                    Tout effacer
-                </button>
-
-            </div>
-
-
-            <div
-                id="conflict-alert"
-                class="conflict-alert hidden"
-            >
-            </div>
-
-
-            <div
-                id="planning-content"
-                class="planning-content"
-            >
-            </div>
-
-        </section>
-
-    </main>
-
-
-    <!-- ======================================================
-         MODAL FILM
-    ======================================================= -->
-
-    <div
-        id="film-modal"
-        class="modal"
-    >
-
-        <div class="modal-overlay"></div>
-
-
-        <div class="modal-dialog">
-
-            <button
-                type="button"
-                class="modal-close"
-                data-close-modal
-                aria-label="Fermer"
-            >
-                ×
-            </button>
-
-
-            <div class="modal-header">
-
-                <span
-                    id="modal-film-category"
-                    class="film-category"
-                >
-                </span>
-
-                <h2 id="modal-film-title">
-                </h2>
-
-                <span
-                    id="modal-film-duration"
-                    class="modal-duration"
-                >
-                </span>
-
-            </div>
-
-
-            <div class="modal-body">
-
-                <h3>
-                    Séances
-                </h3>
-
-                <div
-                    id="modal-film-sessions"
-                    class="modal-sessions"
-                >
-                </div>
-
-            </div>
-
-
-            <div class="modal-footer">
-
-                <button
-                    type="button"
-                    id="modal-select-film"
-                    class="primary-button"
-                >
-                    Ajouter au planning
-                </button>
-
-
-                <button
-                    type="button"
-                    class="secondary-button"
-                    data-close-modal
-                >
-                    Fermer
-                </button>
-
+            <div class="stat">
+                <span id="selected-sessions-count">0</span>
+                <small>séances</small>
             </div>
 
         </div>
 
     </div>
 
+</header>
 
-    <!-- ======================================================
-         SCRIPTS
-    ======================================================= -->
 
-    <script src="./js/planner.js"></script>
-    <script src="./js/app.js"></script>
+<main class="container">
+
+    <!-- =====================================================
+         COLLABORATION
+         ===================================================== -->
+
+    <section
+        id="collaboration-section"
+        class="collaboration-panel"
+    >
+
+        <div class="collaboration-header">
+
+            <div>
+
+                <p class="eyebrow">
+                    PLANNING PARTAGÉ
+                </p>
+
+                <h2>
+                    Collaborer
+                </h2>
+
+                <p class="section-description">
+                    Travaillez sur le même planning avec votre
+                    collègue.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div
+            id="collaboration-create"
+            class="collaboration-create"
+        >
+
+            <label for="user-name">
+                Votre prénom
+            </label>
+
+            <input
+                id="user-name"
+                type="text"
+                maxlength="40"
+                placeholder="Ex. Jérémy"
+            >
+
+            <button
+                id="create-planning-button"
+                class="primary-button"
+                type="button"
+            >
+                Créer un planning partagé
+            </button>
+
+
+            <div class="join-separator">
+                <span>ou</span>
+            </div>
+
+
+            <label for="planning-code">
+                Code du planning
+            </label>
+
+            <input
+                id="planning-code"
+                type="text"
+                maxlength="20"
+                placeholder="Ex. RP26-X7K2"
+            >
+
+            <button
+                id="join-planning-button"
+                class="secondary-button"
+                type="button"
+            >
+                Rejoindre un planning
+            </button>
+
+        </div>
+
+
+        <div
+            id="collaboration-active"
+            class="collaboration-active hidden"
+        >
+
+            <div class="planning-info">
+
+                <div>
+
+                    <span class="planning-label">
+                        PLANNING PARTAGÉ
+                    </span>
+
+                    <strong id="planning-name">
+                        —
+                    </strong>
+
+                </div>
+
+                <div>
+
+                    <span class="planning-label">
+                        CODE
+                    </span>
+
+                    <strong id="planning-code-display">
+                        —
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div class="collaborators">
+
+                <div class="collaborator me">
+
+                    <span class="collaborator-dot"></span>
+
+                    <span id="my-name">
+                        Moi
+                    </span>
+
+                </div>
+
+                <div
+                    id="colleague-user"
+                    class="collaborator colleague"
+                >
+
+                    <span class="collaborator-dot"></span>
+
+                    <span>
+                        Aucun autre utilisateur
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="visibility-controls">
+
+                <button
+                    id="show-my-planning"
+                    class="view-button active"
+                    type="button"
+                >
+                    Mon planning
+                </button>
+
+                <button
+                    id="show-colleague-planning"
+                    class="view-button"
+                    type="button"
+                >
+                    Planning collègue
+                </button>
+
+                <button
+                    id="show-combined-planning"
+                    class="view-button"
+                    type="button"
+                >
+                    Planning commun
+                </button>
+
+            </div>
+
+
+            <div class="visibility-options">
+
+                <label class="checkbox-label">
+
+                    <input
+                        id="toggle-colleague-visibility"
+                        type="checkbox"
+                        checked
+                    >
+
+                    <span>
+                        Afficher les choix de ma collègue
+                    </span>
+
+                </label>
+
+            </div>
+
+
+            <button
+                id="leave-planning-button"
+                class="danger-button"
+                type="button"
+            >
+                Quitter ce planning partagé
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         NAVIGATION
+         ===================================================== -->
+
+    <nav class="main-navigation">
+
+        <button
+            class="nav-button active"
+            data-view="catalogue"
+            type="button"
+        >
+            Catalogue
+        </button>
+
+        <button
+            class="nav-button"
+            data-view="planning"
+            type="button"
+        >
+            Mon planning
+        </button>
+
+    </nav>
+
+
+    <!-- =====================================================
+         CATALOGUE
+         ===================================================== -->
+
+    <section
+        id="catalogue-view"
+        class="view active"
+    >
+
+        <div class="section-heading">
+
+            <div>
+
+                <p class="eyebrow">
+                    PROGRAMME
+                </p>
+
+                <h2>
+                    Catalogue
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        <div class="catalogue-controls">
+
+            <input
+                id="search-input"
+                class="search-input"
+                type="search"
+                placeholder="Rechercher un film..."
+            >
+
+            <div
+                id="category-filters"
+                class="category-filters"
+            ></div>
+
+        </div>
+
+
+        <div
+            id="film-grid"
+            class="film-grid"
+        ></div>
+
+    </section>
+
+
+    <!-- =====================================================
+         PLANNING
+         ===================================================== -->
+
+    <section
+        id="planning-view"
+        class="view"
+    >
+
+        <div class="section-heading">
+
+            <div>
+
+                <p class="eyebrow">
+                    ORGANISATION
+                </p>
+
+                <h2 id="planning-title">
+                    Mon planning
+                </h2>
+
+            </div>
+
+            <button
+                id="clear-selection-button"
+                class="danger-button"
+                type="button"
+            >
+                Tout supprimer
+            </button>
+
+        </div>
+
+
+        <div
+            id="conflict-alert"
+            class="conflict-alert hidden"
+        >
+
+            <strong>
+                ⚠ Conflit détecté
+            </strong>
+
+            <span>
+                Certaines séances se chevauchent.
+                Vous pouvez retirer individuellement
+                les séances concernées.
+            </span>
+
+        </div>
+
+
+        <div
+            id="planning-content"
+            class="planning-content"
+        ></div>
+
+
+        <div
+            id="empty-planning"
+            class="empty-state"
+        >
+
+            <h3>
+                Votre planning est vide
+            </h3>
+
+            <p>
+                Sélectionnez des films depuis le catalogue
+                pour commencer à construire votre journée.
+            </p>
+
+            <button
+                class="primary-button"
+                data-view="catalogue"
+                type="button"
+            >
+                Voir le catalogue
+            </button>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<!-- =========================================================
+     MODAL FILM
+     ========================================================= -->
+
+<div
+    id="film-modal"
+    class="modal hidden"
+>
+
+    <div
+        class="modal-overlay"
+        data-action="close-modal"
+    ></div>
+
+    <div class="modal-content">
+
+        <button
+            class="modal-close"
+            data-action="close-modal"
+            type="button"
+        >
+            ×
+        </button>
+
+        <div id="modal-body"></div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     SCRIPTS
+     ========================================================= -->
+
+<script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+></script>
+
+<script src="js/config.js"></script>
+<script src="js/planner.js"></script>
+<script src="js/app.js"></script>
 
 </body>
-
 </html>

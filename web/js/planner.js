@@ -1,440 +1,465 @@
-const STORAGE_KEY = "reims-polar-2026-selection";
-const EXCLUDED_SESSIONS_STORAGE_KEY =
+/*
+ * ============================================================
+ * REIMS POLAR PLANNER
+ * Gestion des plannings personnels et partagés
+ * ============================================================
+ */
+
+
+const LOCAL_USER_KEY =
+    "reims-polar-2026-user";
+
+const LOCAL_EXCLUDED_KEY =
     "reims-polar-2026-excluded-sessions";
+
+const LOCAL_PLANNING_KEY =
+    "reims-polar-2026-shared-planning";
+
+const LOCAL_VISIBILITY_KEY =
+    "reims-polar-2026-colleague-visible";
 
 
 let selectedFilms = new Set();
 
 let excludedSessions = new Set();
 
+let festivalData = null;
 
-// ============================================================
-// STORAGE
-// ============================================================
+let currentUser = null;
 
-function loadSelection() {
+let currentSharedPlanning = null;
+
+let colleagueUser = null;
+
+let colleagueSelectedFilms = new Set();
+
+let colleagueExcludedSessions = new Set();
+
+let colleagueVisible = true;
+
+let currentPlanningView = "mine";
+
+
+/*
+ * ============================================================
+ * INITIALISATION
+ * ============================================================
+ */
+
+function initPlanner(data) {
+
+    festivalData = data;
+
+    loadLocalState();
+
+    return loadSharedPlanning();
+}
+
+
+/*
+ * ============================================================
+ * STOCKAGE LOCAL
+ * ============================================================
+ */
+
+function loadLocalState() {
 
     try {
 
-        const saved =
-            localStorage.getItem(
-                STORAGE_KEY
-            );
+        const savedUser =
+            localStorage.getItem(LOCAL_USER_KEY);
 
+        if (savedUser) {
 
-        if (saved) {
+            currentUser =
+                JSON.parse(savedUser);
 
-            const parsed =
-                JSON.parse(saved);
-
-
-            if (Array.isArray(parsed)) {
-
-                selectedFilms =
-                    new Set(parsed);
-            }
         }
 
-
     } catch (error) {
 
         console.error(
-            "Impossible de charger la sélection :",
+            "Impossible de charger l'utilisateur",
             error
         );
 
-        selectedFilms =
-            new Set();
     }
-}
 
-
-function saveSelection() {
 
     try {
 
-        localStorage.setItem(
-
-            STORAGE_KEY,
-
-            JSON.stringify(
-                [...selectedFilms]
-            )
-
-        );
-
-    } catch (error) {
-
-        console.error(
-            "Impossible de sauvegarder la sélection :",
-            error
-        );
-    }
-}
-
-
-// ============================================================
-// SÉANCES EXCLUES
-// ============================================================
-
-function loadExcludedSessions() {
-
-    try {
-
-        const saved =
+        const savedExcluded =
             localStorage.getItem(
-                EXCLUDED_SESSIONS_STORAGE_KEY
+                LOCAL_EXCLUDED_KEY
             );
 
+        if (savedExcluded) {
 
-        if (saved) {
+            excludedSessions =
+                new Set(
+                    JSON.parse(savedExcluded)
+                );
 
-            const parsed =
-                JSON.parse(saved);
-
-
-            if (Array.isArray(parsed)) {
-
-                excludedSessions =
-                    new Set(parsed);
-            }
         }
-
 
     } catch (error) {
 
         console.error(
-            "Impossible de charger les séances retirées :",
+            "Impossible de charger les séances exclues",
             error
         );
 
-        excludedSessions =
-            new Set();
     }
-}
 
-
-function saveExcludedSessions() {
 
     try {
 
-        localStorage.setItem(
+        const savedPlanning =
+            localStorage.getItem(
+                LOCAL_PLANNING_KEY
+            );
 
-            EXCLUDED_SESSIONS_STORAGE_KEY,
+        if (savedPlanning) {
 
-            JSON.stringify(
-                [...excludedSessions]
-            )
+            currentSharedPlanning =
+                JSON.parse(savedPlanning);
 
-        );
+        }
 
     } catch (error) {
 
         console.error(
-            "Impossible de sauvegarder les séances retirées :",
+            "Impossible de charger le planning",
             error
         );
+
     }
+
+
+    try {
+
+        const savedVisibility =
+            localStorage.getItem(
+                LOCAL_VISIBILITY_KEY
+            );
+
+        if (savedVisibility !== null) {
+
+            colleagueVisible =
+                savedVisibility === "true";
+
+        }
+
+    } catch (error) {
+
+        colleagueVisible = true;
+
+    }
+
 }
 
 
-// ============================================================
-// FILMS
-// ============================================================
+/*
+ * ============================================================
+ * UTILITAIRES
+ * ============================================================
+ */
 
-function toggleFilm(filmId) {
+function saveLocalState() {
 
-    if (
-        selectedFilms.has(
-            filmId
+    localStorage.setItem(
+        LOCAL_EXCLUDED_KEY,
+        JSON.stringify(
+            [...excludedSessions]
         )
-    ) {
-
-        selectedFilms.delete(
-            filmId
-        );
-
-        // Quand on retire complètement
-        // un film, on réinitialise aussi
-        // ses éventuelles séances exclues.
-
-        removeExcludedSessionsForFilm(
-            filmId
-        );
-
-    } else {
-
-        selectedFilms.add(
-            filmId
-        );
-    }
-
-
-    saveSelection();
-
-    saveExcludedSessions();
-
-    updateInterface();
-}
-
-
-function removeFilm(filmId) {
-
-    selectedFilms.delete(
-        filmId
     );
 
+
+    if (currentUser) {
+
+        localStorage.setItem(
+            LOCAL_USER_KEY,
+            JSON.stringify(currentUser)
+        );
+
+    }
+
+
+    if (currentSharedPlanning) {
+
+        localStorage.setItem(
+            LOCAL_PLANNING_KEY,
+            JSON.stringify(
+                currentSharedPlanning
+            )
+        );
+
+    }
+
+
+    localStorage.setItem(
+        LOCAL_VISIBILITY_KEY,
+        String(colleagueVisible)
+    );
+
+}
+
+
+function sessionKey(session) {
+
+    return [
+        session.filmId || "",
+        session.date || "",
+        session.heure || "",
+        session.salle || ""
+    ].join("|");
+
+}
+
+
+function isSessionExcluded(session) {
+
+    return excludedSessions.has(
+        sessionKey(session)
+    );
+
+}
+
+
+/*
+ * ============================================================
+ * FILMS
+ * ============================================================
+ */
+
+function getFilmById(filmId) {
+
+    if (!festivalData) {
+        return null;
+    }
+
+    return festivalData.films.find(
+        film => film.id === filmId
+    ) || null;
+
+}
+
+
+function selectFilm(filmId) {
+
+    selectedFilms.add(filmId);
+
+    saveLocalState();
+
+    updateSharedPlanning();
+
+}
+
+
+function deselectFilm(filmId) {
+
+    selectedFilms.delete(filmId);
 
     removeExcludedSessionsForFilm(
         filmId
     );
 
+    saveLocalState();
 
-    saveSelection();
+    updateSharedPlanning();
 
-    saveExcludedSessions();
-
-    updateInterface();
 }
 
 
-function clearSelection() {
-
-    selectedFilms.clear();
-
-    excludedSessions.clear();
-
-
-    saveSelection();
-
-    saveExcludedSessions();
-
-    updateInterface();
-}
-
-
-function isSelected(filmId) {
+function isFilmSelected(filmId) {
 
     return selectedFilms.has(
         filmId
     );
+
 }
 
-
-function getSelectedFilms() {
-
-    if (
-
-        !window.festivalData ||
-
-        !Array.isArray(
-            window.festivalData.films
-        )
-
-    ) {
-
-        return [];
-    }
-
-
-    return window.festivalData.films.filter(
-
-        film =>
-            selectedFilms.has(
-                film.id
-            )
-
-    );
-}
-
-
-// ============================================================
-// CLÉ UNIQUE D'UNE SÉANCE
-// ============================================================
-
-function sessionKey(session) {
-
-    return [
-
-        session.filmId || "",
-
-        session.date || "",
-
-        session.heure || "",
-
-        session.salle || ""
-
-    ].join("|");
-}
-
-
-// ============================================================
-// SÉANCE EXCLUE ?
-// ============================================================
-
-function isSessionExcluded(
-    session
-) {
-
-    return excludedSessions.has(
-        sessionKey(session)
-    );
-}
-
-
-// ============================================================
-// RETIRER UNE SÉANCE
-// ============================================================
-
-function removeSession(session) {
-
-    const key =
-        sessionKey(
-            session
-        );
-
-
-    excludedSessions.add(
-        key
-    );
-
-
-    saveExcludedSessions();
-
-    updateInterface();
-}
-
-
-// ============================================================
-// RESTAURER UNE SÉANCE
-// ============================================================
-
-function restoreSession(session) {
-
-    const key =
-        sessionKey(
-            session
-        );
-
-
-    excludedSessions.delete(
-        key
-    );
-
-
-    saveExcludedSessions();
-
-    updateInterface();
-}
-
-
-// ============================================================
-// RETIRER LES EXCLUSIONS D'UN FILM
-// ============================================================
 
 function removeExcludedSessionsForFilm(
     filmId
 ) {
 
-    const prefix =
-        `${filmId}|`;
+    for (const key of excludedSessions) {
 
-
-    excludedSessions =
-        new Set(
-
-            [...excludedSessions].filter(
-                key =>
-                    !key.startsWith(
-                        prefix
-                    )
+        if (
+            key.startsWith(
+                `${filmId}|`
             )
+        ) {
 
-        );
+            excludedSessions.delete(key);
+
+        }
+
+    }
+
 }
 
 
-// ============================================================
-// SÉANCES SÉLECTIONNÉES
-// ============================================================
+/*
+ * ============================================================
+ * SÉANCES
+ * ============================================================
+ */
+
+function removeSession(session) {
+
+    excludedSessions.add(
+        sessionKey(session)
+    );
+
+    saveLocalState();
+
+    updateSharedPlanning();
+
+}
+
+
+function restoreSession(session) {
+
+    excludedSessions.delete(
+        sessionKey(session)
+    );
+
+    saveLocalState();
+
+    updateSharedPlanning();
+
+}
+
 
 function getSelectedSessions() {
+
+    if (!festivalData) {
+        return [];
+    }
+
 
     const sessions = [];
 
 
-    getSelectedFilms().forEach(
-        film => {
+    for (const film of festivalData.films) {
+
+        if (!selectedFilms.has(film.id)) {
+            continue;
+        }
+
+
+        for (const session of film.seances || []) {
 
             if (
-                !Array.isArray(
-                    film.seances
-                )
+                isSessionExcluded({
+                    ...session,
+                    filmId: film.id
+                })
             ) {
-
-                return;
+                continue;
             }
 
 
-            film.seances.forEach(
-                session => {
+            sessions.push({
 
-                    const enrichedSession = {
+                ...session,
 
-                        ...session,
+                filmId: film.id,
 
-                        filmId:
-                            film.id,
+                filmTitle: film.titre,
 
-                        filmTitle:
-                            film.titre,
+                filmDurationMinutes:
+                    film.duree_minutes || 0
 
-                        filmCategory:
-                            film.categorie,
+            });
 
-                        filmDuration:
-                            film.duree,
-
-                        filmDurationMinutes:
-                            film.duree_minutes
-
-                    };
-
-
-                    // ----------------------------------------
-                    // Séance exclue ?
-                    // ----------------------------------------
-
-                    if (
-                        isSessionExcluded(
-                            enrichedSession
-                        )
-                    ) {
-
-                        return;
-                    }
-
-
-                    sessions.push(
-                        enrichedSession
-                    );
-                }
-            );
         }
-    );
+
+    }
 
 
     return sessions;
+
 }
 
 
-// ============================================================
-// TRI
-// ============================================================
+/*
+ * ============================================================
+ * SÉANCES D'UN AUTRE UTILISATEUR
+ * ============================================================
+ */
 
-function sortSessions(
-    sessions
-) {
+function getColleagueSessions() {
+
+    if (!festivalData) {
+        return [];
+    }
+
+
+    const sessions = [];
+
+
+    for (
+        const film of festivalData.films
+    ) {
+
+        if (
+            !colleagueSelectedFilms.has(
+                film.id
+            )
+        ) {
+            continue;
+        }
+
+
+        for (
+            const session of film.seances || []
+        ) {
+
+            const enriched = {
+
+                ...session,
+
+                filmId: film.id,
+
+                filmTitle: film.titre,
+
+                filmDurationMinutes:
+                    film.duree_minutes || 0
+
+            };
+
+
+            if (
+                colleagueExcludedSessions.has(
+                    sessionKey(enriched)
+                )
+            ) {
+                continue;
+            }
+
+
+            sessions.push(enriched);
+
+        }
+
+    }
+
+
+    return sessions;
+
+}
+
+
+/*
+ * ============================================================
+ * TRI
+ * ============================================================
+ */
+
+function sortSessions(sessions) {
 
     return [...sessions].sort(
         (a, b) => {
@@ -442,183 +467,114 @@ function sortSessions(
             const dateA =
                 a.date || "";
 
-
             const dateB =
                 b.date || "";
 
-
-            if (
-                dateA !==
-                dateB
-            ) {
+            if (dateA !== dateB) {
 
                 return dateA.localeCompare(
                     dateB
                 );
-            }
 
-
-            const timeA =
-                Number(
-                    a.heure_minutes ||
-                    0
-                );
-
-
-            const timeB =
-                Number(
-                    b.heure_minutes ||
-                    0
-                );
-
-
-            if (
-                timeA !==
-                timeB
-            ) {
-
-                return (
-                    timeA -
-                    timeB
-                );
             }
 
 
             return (
-
-                a.salle ||
-                ""
-
-            ).localeCompare(
-
-                b.salle ||
-                ""
-
+                (a.heure_minutes || 0) -
+                (b.heure_minutes || 0)
             );
-        }
-    );
-}
 
-
-// ============================================================
-// SÉANCES PAR JOUR
-// ============================================================
-
-function getSessionsByDay() {
-
-    const sessions =
-        sortSessions(
-            getSelectedSessions()
-        );
-
-
-    const days = {};
-
-
-    sessions.forEach(
-        session => {
-
-            if (
-                !days[
-                    session.date
-                ]
-            ) {
-
-                days[
-                    session.date
-                ] = {
-
-                    date:
-                        session.date,
-
-                    jour:
-                        session.jour,
-
-                    sessions:
-                        []
-
-                };
-            }
-
-
-            days[
-                session.date
-            ].sessions.push(
-                session
-            );
         }
     );
 
-
-    return Object.values(
-        days
-    );
 }
 
 
-// ============================================================
-// FIN DE SÉANCE
-// ============================================================
+/*
+ * ============================================================
+ * FIN DE SÉANCE
+ * ============================================================
+ */
 
-function getSessionEndMinutes(
-    session
+function calculateEndTime(
+    startMinutes,
+    durationMinutes
 ) {
 
-    if (
-
-        typeof
-            session.heure_fin_minutes ===
-            "number"
-
-        &&
-
-        !Number.isNaN(
-            session.heure_fin_minutes
-        )
-
-    ) {
-
-        return session.heure_fin_minutes;
-    }
+    const total =
+        startMinutes +
+        durationMinutes;
 
 
-    const start =
-        Number(
-            session.heure_minutes ||
-            0
-        );
+    const hours =
+        Math.floor(total / 60) % 24;
 
-
-    const duration =
-        Number(
-
-            session.filmDurationMinutes ||
-
-            session.duree_minutes ||
-
-            0
-
-        );
+    const minutes =
+        total % 60;
 
 
     return (
-        start +
-        duration
+        String(hours).padStart(2, "0") +
+        "h" +
+        String(minutes).padStart(2, "0")
     );
+
 }
 
 
-// ============================================================
-// CONFLITS
-// ============================================================
+/*
+ * ============================================================
+ * CONFLITS
+ * ============================================================
+ */
 
-function detectConflicts() {
+function getSessionEndMinutes(session) {
 
-    const sessions =
-        getSelectedSessions();
+    return (
+        session.heure_minutes || 0
+    ) +
+    (
+        session.filmDurationMinutes || 0
+    );
+
+}
 
 
-    const conflicts = [];
+function sessionsConflict(a, b) {
+
+    if (a.date !== b.date) {
+        return false;
+    }
+
+
+    const startA =
+        a.heure_minutes || 0;
+
+    const endA =
+        getSessionEndMinutes(a);
+
+
+    const startB =
+        b.heure_minutes || 0;
+
+    const endB =
+        getSessionEndMinutes(b);
+
+
+    return (
+        startA < endB &&
+        startB < endA
+    );
+
+}
+
+
+function getConflictSessionKeys(
+    sessions
+) {
+
+    const conflicts =
+        new Set();
 
 
     for (
@@ -627,196 +583,755 @@ function detectConflicts() {
         i++
     ) {
 
-        const first =
-            sessions[i];
-
-
-        const firstStart =
-            Number(
-                first.heure_minutes ||
-                0
-            );
-
-
-        const firstEnd =
-            getSessionEndMinutes(
-                first
-            );
-
-
         for (
             let j = i + 1;
             j < sessions.length;
             j++
         ) {
 
-            const second =
-                sessions[j];
-
-
             if (
-                first.date !==
-                second.date
+                sessionsConflict(
+                    sessions[i],
+                    sessions[j]
+                )
             ) {
 
-                continue;
-            }
-
-
-            const secondStart =
-                Number(
-                    second.heure_minutes ||
-                    0
+                conflicts.add(
+                    sessionKey(
+                        sessions[i]
+                    )
                 );
 
-
-            const secondEnd =
-                getSessionEndMinutes(
-                    second
+                conflicts.add(
+                    sessionKey(
+                        sessions[j]
+                    )
                 );
 
-
-            const overlap =
-
-                firstStart <
-                secondEnd
-
-                &&
-
-                secondStart <
-                firstEnd;
-
-
-            if (overlap) {
-
-                conflicts.push({
-
-                    first,
-
-                    second
-
-                });
             }
+
         }
+
     }
 
 
     return conflicts;
+
 }
 
 
-// ============================================================
-// CLÉS DES SÉANCES EN CONFLIT
-// ============================================================
+/*
+ * ============================================================
+ * COLLABORATION
+ * ============================================================
+ */
 
-function getConflictSessionKeys() {
+async function createSharedPlanning(
+    userName
+) {
 
-    const keys =
-        new Set();
+    if (!userName.trim()) {
+
+        throw new Error(
+            "Veuillez renseigner votre prénom."
+        );
+
+    }
 
 
-    detectConflicts().forEach(
-        conflict => {
+    const code =
+        generatePlanningCode();
 
-            keys.add(
-                sessionKey(
-                    conflict.first
+
+    const planningName =
+        `${userName} & collègue`;
+
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+        .from("planning_rooms")
+        .insert({
+
+            code: code,
+
+            name: planningName
+
+        })
+        .select()
+        .single();
+
+
+    if (error) {
+
+        console.error(error);
+
+        throw error;
+
+    }
+
+
+    currentSharedPlanning =
+        data;
+
+
+    const user =
+        await registerUser(
+            data.id,
+            userName
+        );
+
+
+    currentUser =
+        user;
+
+
+    saveLocalState();
+
+    return data;
+
+}
+
+
+async function joinSharedPlanning(
+    code,
+    userName
+) {
+
+    if (!code.trim()) {
+
+        throw new Error(
+            "Veuillez renseigner un code."
+        );
+
+    }
+
+
+    if (!userName.trim()) {
+
+        throw new Error(
+            "Veuillez renseigner votre prénom."
+        );
+
+    }
+
+
+    const {
+        data: room,
+        error
+    } = await supabaseClient
+        .from("planning_rooms")
+        .select("*")
+        .eq(
+            "code",
+            code.trim().toUpperCase()
+        )
+        .single();
+
+
+    if (error || !room) {
+
+        throw new Error(
+            "Planning introuvable."
+        );
+
+    }
+
+
+    currentSharedPlanning =
+        room;
+
+
+    currentUser =
+        await registerUser(
+            room.id,
+            userName
+        );
+
+
+    saveLocalState();
+
+    return room;
+
+}
+
+
+async function registerUser(
+    roomId,
+    userName
+) {
+
+    const existingUser =
+        await supabaseClient
+            .from("planning_users")
+            .select("*")
+            .eq(
+                "room_id",
+                roomId
+            )
+            .eq(
+                "name",
+                userName.trim()
+            )
+            .maybeSingle();
+
+
+    if (
+        existingUser.data
+    ) {
+
+        return existingUser.data;
+
+    }
+
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+        .from("planning_users")
+        .insert({
+
+            room_id: roomId,
+
+            name: userName.trim()
+
+        })
+        .select()
+        .single();
+
+
+    if (error) {
+
+        throw error;
+
+    }
+
+
+    return data;
+
+}
+
+
+function generatePlanningCode() {
+
+    const chars =
+        "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+
+    let result =
+        "RP26-";
+
+
+    for (
+        let i = 0;
+        i < 4;
+        i++
+    ) {
+
+        result +=
+            chars[
+                Math.floor(
+                    Math.random() *
+                    chars.length
                 )
+            ];
+
+    }
+
+
+    return result;
+
+}
+
+
+/*
+ * ============================================================
+ * CHARGEMENT DU PLANNING PARTAGÉ
+ * ============================================================
+ */
+
+async function loadSharedPlanning() {
+
+    if (
+        !currentSharedPlanning ||
+        !currentUser
+    ) {
+
+        return;
+
+    }
+
+
+    await loadAllSharedSelections();
+
+}
+
+
+async function loadAllSharedSelections() {
+
+    if (
+        !currentSharedPlanning
+    ) {
+        return;
+    }
+
+
+    const {
+        data: users,
+        error: usersError
+    } =
+        await supabaseClient
+            .from("planning_users")
+            .select("*")
+            .eq(
+                "room_id",
+                currentSharedPlanning.id
             );
 
 
-            keys.add(
-                sessionKey(
-                    conflict.second
-                )
+    if (usersError) {
+
+        console.error(usersError);
+
+        return;
+
+    }
+
+
+    colleagueUser =
+        users.find(
+            user =>
+                user.id !==
+                currentUser.id
+        ) || null;
+
+
+    if (!colleagueUser) {
+
+        colleagueSelectedFilms =
+            new Set();
+
+        colleagueExcludedSessions =
+            new Set();
+
+        return;
+
+    }
+
+
+    const {
+        data: selections,
+        error: selectionsError
+    } =
+        await supabaseClient
+            .from("planning_selections")
+            .select("*")
+            .eq(
+                "user_id",
+                colleagueUser.id
             );
+
+
+    if (selectionsError) {
+
+        console.error(
+            selectionsError
+        );
+
+        return;
+
+    }
+
+
+    colleagueSelectedFilms =
+        new Set(
+            selections
+                .filter(
+                    item =>
+                        item.selected
+                )
+                .map(
+                    item =>
+                        item.film_id
+                )
+        );
+
+
+    colleagueExcludedSessions =
+        new Set(
+            selections
+                .filter(
+                    item =>
+                        item.session_excluded
+                )
+                .map(
+                    item =>
+                        item.session_key
+                )
+                .filter(Boolean)
+        );
+
+}
+
+
+/*
+ * ============================================================
+ * SYNCHRONISATION
+ * ============================================================
+ */
+
+async function updateSharedPlanning() {
+
+    if (
+        !currentSharedPlanning ||
+        !currentUser
+    ) {
+
+        return;
+
+    }
+
+
+    const rows = [];
+
+
+    for (
+        const filmId of selectedFilms
+    ) {
+
+        rows.push({
+
+            user_id:
+                currentUser.id,
+
+            film_id:
+                filmId,
+
+            selected:
+                true,
+
+            session_excluded:
+                false,
+
+            session_key:
+                null
+
+        });
+
+    }
+
+
+    for (
+        const sessionKeyValue
+        of excludedSessions
+    ) {
+
+        const filmId =
+            sessionKeyValue.split("|")[0];
+
+
+        rows.push({
+
+            user_id:
+                currentUser.id,
+
+            film_id:
+                filmId,
+
+            selected:
+                false,
+
+            session_excluded:
+                true,
+
+            session_key:
+                sessionKeyValue
+
+        });
+
+    }
+
+
+    /*
+     * Supprimer les anciennes sélections
+     */
+
+    const {
+        error: deleteError
+    } =
+        await supabaseClient
+            .from("planning_selections")
+            .delete()
+            .eq(
+                "user_id",
+                currentUser.id
+            );
+
+
+    if (deleteError) {
+
+        console.error(
+            deleteError
+        );
+
+        return;
+
+    }
+
+
+    if (!rows.length) {
+
+        return;
+
+    }
+
+
+    const {
+        error: insertError
+    } =
+        await supabaseClient
+            .from("planning_selections")
+            .insert(rows);
+
+
+    if (insertError) {
+
+        console.error(
+            insertError
+        );
+
+    }
+
+}
+
+
+/*
+ * ============================================================
+ * ABONNEMENT TEMPS RÉEL
+ * ============================================================
+ */
+
+function subscribeToSharedPlanning(
+    callback
+) {
+
+    if (
+        !currentSharedPlanning
+    ) {
+
+        return null;
+
+    }
+
+
+    const channel =
+        supabaseClient
+            .channel(
+                `planning-${currentSharedPlanning.id}`
+            )
+            .on(
+
+                "postgres_changes",
+
+                {
+                    event: "*",
+
+                    schema: "public",
+
+                    table: "planning_selections",
+
+                    filter:
+                        `user_id=neq.${currentUser.id}`
+
+                },
+
+                async () => {
+
+                    await loadAllSharedSelections();
+
+                    if (callback) {
+                        callback();
+                    }
+
+                }
+
+            )
+            .subscribe();
+
+
+    return channel;
+
+}
+
+
+/*
+ * ============================================================
+ * VUE
+ * ============================================================
+ */
+
+function setPlanningView(view) {
+
+    currentPlanningView =
+        view;
+
+}
+
+
+function getPlanningSessions() {
+
+    if (
+        currentPlanningView ===
+        "colleague"
+    ) {
+
+        return getColleagueSessions();
+
+    }
+
+
+    if (
+        currentPlanningView ===
+        "combined"
+    ) {
+
+        const mine =
+            getSelectedSessions();
+
+        const colleague =
+            getColleagueSessions();
+
+
+        const map =
+            new Map();
+
+
+        for (const session of mine) {
+
+            map.set(
+                sessionKey(session),
+                {
+                    ...session,
+                    owner: "mine"
+                }
+            );
+
         }
-    );
 
 
-    return keys;
+        for (
+            const session of colleague
+        ) {
+
+            const key =
+                sessionKey(session);
+
+
+            if (map.has(key)) {
+
+                map.get(key).owner =
+                    "both";
+
+            } else {
+
+                map.set(
+                    key,
+                    {
+                        ...session,
+                        owner:
+                            "colleague"
+                    }
+                );
+
+            }
+
+        }
+
+
+        return [
+            ...map.values()
+        ];
+
+    }
+
+
+    return getSelectedSessions();
+
 }
 
 
-// ============================================================
-// INTERFACE
-// ============================================================
-
-function updateInterface() {
-
-    if (
-        typeof window.renderCatalogue ===
-        "function"
-    ) {
-
-        window.renderCatalogue();
-    }
-
-
-    if (
-        typeof window.renderPlanning ===
-        "function"
-    ) {
-
-        window.renderPlanning();
-    }
-
-
-    if (
-        typeof window.updateCounters ===
-        "function"
-    ) {
-
-        window.updateCounters();
-    }
-}
-
-
-// ============================================================
-// INITIALISATION
-// ============================================================
-
-loadSelection();
-
-loadExcludedSessions();
-
-
-// ============================================================
-// API PUBLIQUE
-// ============================================================
+/*
+ * ============================================================
+ * API PUBLIQUE
+ * ============================================================
+ */
 
 window.planner = {
 
-    toggleFilm,
+    initPlanner,
 
-    removeFilm,
+    getFilmById,
 
-    clearSelection,
+    selectFilm,
 
-    isSelected,
+    deselectFilm,
 
-    getSelectedFilms,
-
-    getSelectedSessions,
-
-    sortSessions,
-
-    getSessionsByDay,
-
-    detectConflicts,
-
-    getConflictSessionKeys,
-
-    sessionKey,
-
-    getSessionEndMinutes,
-
-    isSessionExcluded,
+    isFilmSelected,
 
     removeSession,
 
     restoreSession,
 
-    updateInterface
+    getSelectedSessions,
+
+    getColleagueSessions,
+
+    getPlanningSessions,
+
+    sortSessions,
+
+    calculateEndTime,
+
+    sessionKey,
+
+    getConflictSessionKeys,
+
+    sessionsConflict,
+
+    createSharedPlanning,
+
+    joinSharedPlanning,
+
+    loadAllSharedSelections,
+
+    subscribeToSharedPlanning,
+
+    updateSharedPlanning,
+
+    setPlanningView,
+
+    getCurrentUser:
+        () => currentUser,
+
+    getSharedPlanning:
+        () => currentSharedPlanning,
+
+    getColleagueUser:
+        () => colleagueUser,
+
+    isColleagueVisible:
+        () => colleagueVisible,
+
+    setColleagueVisible:
+        value => {
+
+            colleagueVisible =
+                value;
+
+            saveLocalState();
+
+        }
 
 };

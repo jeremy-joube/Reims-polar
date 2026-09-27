@@ -1,13 +1,23 @@
-let festivalData = null;
+/*
+ * ============================================================
+ * REIMS POLAR PLANNER
+ * Interface
+ * ============================================================
+ */
+
 
 let currentCategory = "TOUS";
 
 let currentSearch = "";
 
+let activeRealtimeChannel = null;
 
-// ============================================================
-// INITIALISATION
-// ============================================================
+
+/*
+ * ============================================================
+ * INITIALISATION
+ * ============================================================
+ */
 
 document.addEventListener(
     "DOMContentLoaded",
@@ -17,103 +27,182 @@ document.addEventListener(
 
             const response =
                 await fetch(
-                    "./data/Reims_Polar_2026.json"
+                    "data/Reims_Polar_2026.json"
                 );
-
-
-            if (!response.ok) {
-
-                throw new Error(
-                    `Erreur HTTP ${response.status}`
-                );
-            }
 
 
             festivalData =
                 await response.json();
 
 
-            window.festivalData =
-                festivalData;
+            await planner.initPlanner(
+                festivalData
+            );
 
 
-            initializeInterface();
+            setupNavigation();
+
+            setupCategoryFilters();
+
+            setupSearch();
+
+            setupCollaboration();
+
+            setupPlanningActions();
+
+            renderCatalogue();
+
+            renderPlanning();
+
+            updateCounters();
+
+            updateCollaborationInterface();
+
+
+            activeRealtimeChannel =
+                planner.subscribeToSharedPlanning(
+                    () => {
+
+                        updateCollaborationInterface();
+
+                        renderPlanning();
+
+                        updateCounters();
+
+                    }
+                );
 
 
         } catch (error) {
 
             console.error(
-                "Impossible de charger les données :",
+                "Erreur d'initialisation",
                 error
             );
 
-
-            const catalogue =
-                document.getElementById(
-                    "film-grid"
-                );
-
-
-            if (catalogue) {
-
-                catalogue.innerHTML = `
-
-                    <div class="empty-state">
-
-                        <h3>
-                            Impossible de charger le catalogue
-                        </h3>
-
-                        <p>
-                            Vérifiez que le fichier JSON
-                            est bien présent dans
-                            <code>web/data/</code>.
-                        </p>
-
-                    </div>
-
-                `;
-            }
         }
+
     }
 );
 
 
-// ============================================================
-// INITIALISATION
-// ============================================================
+/*
+ * ============================================================
+ * NAVIGATION
+ * ============================================================
+ */
 
-function initializeInterface() {
+function setupNavigation() {
 
-    setupCategoryFilters();
+    document
+        .querySelectorAll(
+            ".nav-button"
+        )
+        .forEach(button => {
 
-    setupSearch();
+            button.addEventListener(
+                "click",
+                () => {
 
-    setupNavigation();
+                    showView(
+                        button.dataset.view
+                    );
 
-    setupPlanningButtons();
+                }
+            );
 
-    setupModal();
-
-    setupClearSelection();
-
-
-    renderCatalogue();
-
-    renderPlanning();
-
-    updateCounters();
+        });
 
 
-    showView(
-        "catalogue"
-    );
+    document
+        .querySelectorAll(
+            "[data-view]"
+        )
+        .forEach(button => {
+
+            if (
+                button.classList.contains(
+                    "nav-button"
+                )
+            ) {
+                return;
+            }
+
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    showView(
+                        button.dataset.view
+                    );
+
+                }
+            );
+
+        });
+
 }
 
 
-// ============================================================
-// CATÉGORIES
-// ============================================================
+function showView(view) {
+
+    document
+        .querySelectorAll(
+            ".view"
+        )
+        .forEach(element => {
+
+            element.classList.remove(
+                "active"
+            );
+
+        });
+
+
+    const target =
+        document.getElementById(
+            `${view}-view`
+        );
+
+
+    if (target) {
+
+        target.classList.add(
+            "active"
+        );
+
+    }
+
+
+    document
+        .querySelectorAll(
+            ".nav-button"
+        )
+        .forEach(button => {
+
+            button.classList.toggle(
+                "active",
+                button.dataset.view === view
+            );
+
+        });
+
+
+    if (view === "planning") {
+
+        renderPlanning();
+
+    }
+
+}
+
+
+/*
+ * ============================================================
+ * CATÉGORIES
+ * ============================================================
+ */
 
 function setupCategoryFilters() {
 
@@ -123,80 +212,21 @@ function setupCategoryFilters() {
         );
 
 
-    if (!container) {
-        return;
-    }
-
-
     container.innerHTML = "";
 
 
-    // --------------------------------------------------------
-    // TOUS
-    // --------------------------------------------------------
-
-    const allButton =
-        document.createElement(
-            "button"
-        );
-
-
-    allButton.type =
-        "button";
-
-
-    allButton.className =
-        "category-button active";
-
-
-    allButton.dataset.category =
-        "TOUS";
-
-
-    allButton.textContent =
-        "Tous";
-
-
-    allButton.addEventListener(
-        "click",
-        () => {
-
-            currentCategory =
-                "TOUS";
-
-
-            updateActiveCategoryButton();
-
-            renderCatalogue();
-        }
-    );
-
-
-    container.appendChild(
-        allButton
-    );
-
-
-    // --------------------------------------------------------
-    // CATÉGORIES
-    // --------------------------------------------------------
-
-    const categories = [
-
-        ...new Set(
-
-            festivalData.films
-
-                .map(
-                    film =>
-                        film.categorie
-                )
-
-                .filter(Boolean)
-
-        )
-
-    ].sort();
+    const categories =
+        [
+            "TOUS",
+            ...new Set(
+                festivalData.films
+                    .map(
+                        film =>
+                            film.categorie
+                    )
+                    .filter(Boolean)
+            )
+        ];
 
 
     categories.forEach(
@@ -208,9 +238,7 @@ function setupCategoryFilters() {
                 );
 
 
-            button.type =
-                "button";
-
+            button.type = "button";
 
             button.className =
                 "category-button";
@@ -221,7 +249,9 @@ function setupCategoryFilters() {
 
 
             button.textContent =
-                category;
+                category === "TOUS"
+                    ? "Tous"
+                    : category;
 
 
             button.addEventListener(
@@ -231,10 +261,10 @@ function setupCategoryFilters() {
                     currentCategory =
                         category;
 
-
                     updateActiveCategoryButton();
 
                     renderCatalogue();
+
                 }
             );
 
@@ -242,54 +272,47 @@ function setupCategoryFilters() {
             container.appendChild(
                 button
             );
+
         }
     );
+
+
+    updateActiveCategoryButton();
+
 }
 
-
-// ============================================================
-// CATÉGORIE ACTIVE
-// ============================================================
 
 function updateActiveCategoryButton() {
 
-    const buttons =
-        document.querySelectorAll(
+    document
+        .querySelectorAll(
             ".category-button"
-        );
-
-
-    buttons.forEach(
-        button => {
+        )
+        .forEach(button => {
 
             button.classList.toggle(
-
                 "active",
-
                 button.dataset.category ===
-                currentCategory
-
+                    currentCategory
             );
-        }
-    );
+
+        });
+
 }
 
 
-// ============================================================
-// RECHERCHE
-// ============================================================
+/*
+ * ============================================================
+ * RECHERCHE
+ * ============================================================
+ */
 
 function setupSearch() {
 
     const input =
         document.getElementById(
-            "film-search"
+            "search-input"
         );
-
-
-    if (!input) {
-        return;
-    }
 
 
     input.addEventListener(
@@ -303,65 +326,18 @@ function setupSearch() {
 
 
             renderCatalogue();
+
         }
     );
+
 }
 
 
-// ============================================================
-// FILMS FILTRÉS
-// ============================================================
-
-function getFilteredFilms() {
-
-    if (
-        !festivalData ||
-        !festivalData.films
-    ) {
-
-        return [];
-    }
-
-
-    return festivalData.films.filter(
-        film => {
-
-            const categoryMatch =
-
-                currentCategory ===
-                "TOUS"
-
-                ||
-
-                film.categorie ===
-                currentCategory;
-
-
-            const searchMatch =
-
-                !currentSearch
-
-                ||
-
-                film.titre
-                    .toLowerCase()
-                    .includes(
-                        currentSearch
-                    );
-
-
-            return (
-                categoryMatch &&
-                searchMatch
-            );
-        }
-    );
-}
-
-
-// ============================================================
-// CATALOGUE
-// ============================================================
+/*
+ * ============================================================
+ * CATALOGUE
+ * ============================================================
+ */
 
 function renderCatalogue() {
 
@@ -371,41 +347,65 @@ function renderCatalogue() {
         );
 
 
-    if (!grid) {
-        return;
+    let films =
+        festivalData.films || [];
+
+
+    if (
+        currentCategory !==
+        "TOUS"
+    ) {
+
+        films =
+            films.filter(
+                film =>
+                    film.categorie ===
+                    currentCategory
+            );
+
     }
 
 
-    const films =
-        getFilteredFilms();
+    if (currentSearch) {
+
+        films =
+            films.filter(
+                film =>
+                    film.titre
+                        .toLowerCase()
+                        .includes(
+                            currentSearch
+                        )
+            );
+
+    }
+
+
+    films.sort(
+        (a, b) =>
+            a.titre.localeCompare(
+                b.titre
+            )
+    );
 
 
     grid.innerHTML = "";
 
 
-    if (
-        films.length === 0
-    ) {
+    if (!films.length) {
 
         grid.innerHTML = `
-
             <div class="empty-state">
-
-                <h3>
-                    Aucun film trouvé
-                </h3>
-
+                <h3>Aucun film trouvé</h3>
                 <p>
-                    Essayez une autre recherche
-                    ou une autre catégorie.
+                    Aucun film ne correspond
+                    à votre recherche.
                 </p>
-
             </div>
-
         `;
 
-
         return;
+
     }
 
 
@@ -413,22 +413,16 @@ function renderCatalogue() {
         film => {
 
             grid.appendChild(
-                createFilmCard(
-                    film
-                )
+                createFilmCard(film)
             );
+
         }
     );
+
 }
 
 
-// ============================================================
-// CARTE FILM
-// ============================================================
-
-function createFilmCard(
-    film
-) {
+function createFilmCard(film) {
 
     const card =
         document.createElement(
@@ -436,149 +430,101 @@ function createFilmCard(
         );
 
 
-    card.className =
-        "film-card";
-
-
     const selected =
-        planner.isSelected(
+        planner.isFilmSelected(
             film.id
         );
 
 
-    if (selected) {
-
-        card.classList.add(
-            "selected"
+    card.className =
+        "film-card" +
+        (
+            selected
+                ? " selected"
+                : ""
         );
-    }
-
-
-    const category =
-        film.categorie || "";
-
-
-    const duration =
-        film.duree || "";
 
 
     const sessionsCount =
-
-        Array.isArray(
-            film.seances
-        )
-
-            ? film.seances.length
-
-            : 0;
+        (
+            film.seances || []
+        ).length;
 
 
     card.innerHTML = `
 
-        <div class="film-card-header">
+        <div class="film-card-top">
 
             <span class="film-category">
-
                 ${escapeHtml(
-                    category
+                    film.categorie || ""
                 )}
-
             </span>
-
 
             ${
                 selected
-
                     ? `
-
-                        <span
-                            class="selected-badge"
-                        >
-
-                            SÉLECTIONNÉ
-
+                        <span class="selected-badge">
+                            ✓ Sélectionné
                         </span>
-
-                      `
-
+                    `
                     : ""
             }
 
         </div>
 
 
-        <div class="film-card-body">
+        <h3>
+            ${escapeHtml(
+                film.titre
+            )}
+        </h3>
 
-            <h3 class="film-title">
 
+        <div class="film-meta">
+
+            <span>
                 ${escapeHtml(
-                    film.titre
+                    film.duree || ""
                 )}
+            </span>
 
-            </h3>
-
-
-            <div class="film-meta">
-
-                ${
-                    duration
-
-                        ? `
-
-                            <span>
-
-                                ${escapeHtml(
-                                    duration
-                                )}
-
-                            </span>
-
-                          `
-
+            <span>
+                ${sessionsCount}
+                séance${
+                    sessionsCount > 1
+                        ? "s"
                         : ""
                 }
-
-
-                <span>
-
-                    ${sessionsCount}
-
-                    ${
-                        sessionsCount > 1
-                            ? "séances"
-                            : "séance"
-                    }
-
-                </span>
-
-            </div>
+            </span>
 
         </div>
 
 
-        <div class="film-card-footer">
+        <div class="film-card-actions">
 
             <button
                 type="button"
-                class="film-details-button"
+                class="secondary-button"
                 data-action="details"
             >
                 Détails
             </button>
 
-
             <button
                 type="button"
-                class="film-select-button"
-                data-action="select"
+                class="${
+                    selected
+                        ? "danger-button"
+                        : "primary-button"
+                }"
+                data-action="toggle"
             >
-
                 ${
                     selected
                         ? "Retirer"
                         : "Ajouter"
                 }
-
             </button>
 
         </div>
@@ -586,64 +532,65 @@ function createFilmCard(
     `;
 
 
-    const detailsButton =
-        card.querySelector(
+    card
+        .querySelector(
             '[data-action="details"]'
+        )
+        .addEventListener(
+            "click",
+            () => openFilmModal(film)
         );
 
 
-    detailsButton.addEventListener(
-        "click",
-        event => {
+    card
+        .querySelector(
+            '[data-action="toggle"]'
+        )
+        .addEventListener(
+            "click",
+            () => {
 
-            event.stopPropagation();
+                if (
+                    planner.isFilmSelected(
+                        film.id
+                    )
+                ) {
 
-            openFilmModal(
-                film
-            );
-        }
-    );
+                    planner.deselectFilm(
+                        film.id
+                    );
+
+                } else {
+
+                    planner.selectFilm(
+                        film.id
+                    );
+
+                }
 
 
-    const selectButton =
-        card.querySelector(
-            '[data-action="select"]'
+                renderCatalogue();
+
+                renderPlanning();
+
+                updateCounters();
+
+            }
         );
-
-
-    selectButton.addEventListener(
-        "click",
-        event => {
-
-            event.stopPropagation();
-
-            planner.toggleFilm(
-                film.id
-            );
-        }
-    );
-
-
-    card.addEventListener(
-        "click",
-        () => {
-
-            openFilmModal(
-                film
-            );
-        }
-    );
 
 
     return card;
+
 }
 
 
-// ============================================================
-// MODAL
-// ============================================================
+/*
+ * ============================================================
+ * MODAL
+ * ============================================================
+ */
 
-function setupModal() {
+function openFilmModal(film) {
 
     const modal =
         document.getElementById(
@@ -651,326 +598,136 @@ function setupModal() {
         );
 
 
-    if (!modal) {
-        return;
-    }
-
-
-    const closeButtons =
-        modal.querySelectorAll(
-            "[data-close-modal]"
-        );
-
-
-    closeButtons.forEach(
-        button => {
-
-            button.addEventListener(
-                "click",
-                closeFilmModal
-            );
-        }
-    );
-
-
-    const overlay =
-        modal.querySelector(
-            ".modal-overlay"
-        );
-
-
-    if (overlay) {
-
-        overlay.addEventListener(
-            "click",
-            closeFilmModal
-        );
-    }
-}
-
-
-function openFilmModal(
-    film
-) {
-
-    const modal =
+    const body =
         document.getElementById(
-            "film-modal"
-        );
-
-
-    if (!modal) {
-        return;
-    }
-
-
-    const title =
-        modal.querySelector(
-            "#modal-film-title"
-        );
-
-
-    const category =
-        modal.querySelector(
-            "#modal-film-category"
-        );
-
-
-    const duration =
-        modal.querySelector(
-            "#modal-film-duration"
+            "modal-body"
         );
 
 
     const sessions =
-        modal.querySelector(
-            "#modal-film-sessions"
-        );
-
-
-    const selectButton =
-        modal.querySelector(
-            "#modal-select-film"
-        );
-
-
-    if (title) {
-
-        title.textContent =
-            film.titre;
-    }
-
-
-    if (category) {
-
-        category.textContent =
-            film.categorie || "";
-    }
-
-
-    if (duration) {
-
-        duration.textContent =
-            film.duree || "";
-    }
-
-
-    // --------------------------------------------------------
-    // SÉANCES
-    // --------------------------------------------------------
-
-    if (sessions) {
-
-        sessions.innerHTML = "";
-
-
-        const filmSessions =
-            planner.sortSessions(
+        planner.sortSessions(
+            (
                 film.seances || []
-            );
-
-
-        if (
-            filmSessions.length === 0
-        ) {
-
-            sessions.innerHTML = `
-
-                <p class="empty-state">
-
-                    Aucune séance disponible.
-
-                </p>
-
-            `;
-
-        } else {
-
-            filmSessions.forEach(
-                session => {
-
-                    const item =
-                        document.createElement(
-                            "div"
-                        );
-
-
-                    item.className =
-                        "modal-session";
-
-
-                    const endTime =
-
-                        session.heure_fin
-
-                        ||
-
-                        calculateEndTime(
-
-                            session.heure,
-
-                            session.duree_minutes
-
-                            ||
-
-                            film.duree_minutes
-
-                        );
-
-
-                    item.innerHTML = `
-
-                        <div>
-
-                            <strong>
-
-                                ${escapeHtml(
-                                    formatDate(
-                                        session.date
-                                    )
-                                )}
-
-                            </strong>
-
-
-                            <span>
-
-                                ${escapeHtml(
-                                    session.jour ||
-                                    ""
-                                )}
-
-                            </span>
-
-                        </div>
-
-
-                        <div>
-
-                            <strong>
-
-                                ${escapeHtml(
-                                    session.heure ||
-                                    ""
-                                )}
-
-                            </strong>
-
-
-                            ${
-                                endTime
-
-                                    ? `
-
-                                        <span>
-
-                                            →
-                                            ${escapeHtml(
-                                                endTime
-                                            )}
-
-                                        </span>
-
-                                      `
-
-                                    : ""
-                            }
-
-                        </div>
-
-
-                        <div>
-
-                            ${escapeHtml(
-                                session.salle ||
-                                ""
-                            )}
-
-                        </div>
-
-                    `;
-
-
-                    sessions.appendChild(
-                        item
-                    );
-                }
-            );
-        }
-    }
-
-
-    if (selectButton) {
-
-        selectButton.textContent =
-
-            planner.isSelected(
-                film.id
+            ).map(
+                session => ({
+                    ...session,
+                    filmId: film.id,
+                    filmTitle: film.titre,
+                    filmDurationMinutes:
+                        film.duree_minutes || 0
+                })
             )
-
-                ? "Retirer du planning"
-
-                : "Ajouter au planning";
+        );
 
 
-        selectButton.onclick = () => {
+    body.innerHTML = `
 
-            planner.toggleFilm(
-                film.id
-            );
+        <p class="eyebrow">
+            ${escapeHtml(
+                film.categorie || ""
+            )}
+        </p>
+
+        <h2>
+            ${escapeHtml(
+                film.titre
+            )}
+        </h2>
+
+        <p class="modal-duration">
+            Durée :
+            ${escapeHtml(
+                film.duree || ""
+            )}
+        </p>
 
 
-            selectButton.textContent =
-
-                planner.isSelected(
-                    film.id
-                )
-
-                    ? "Retirer du planning"
-
-                    : "Ajouter au planning";
-        };
-    }
+        <h3>
+            Séances
+        </h3>
 
 
-    modal.classList.add(
-        "open"
+        <div class="modal-sessions">
+
+            ${
+                sessions.map(
+                    session => `
+
+                    <div class="modal-session">
+
+                        <strong>
+                            ${escapeHtml(
+                                formatDate(
+                                    session.date
+                                )
+                            )}
+                        </strong>
+
+                        <span>
+                            ${escapeHtml(
+                                session.heure
+                            )}
+                        </span>
+
+                        <span>
+                            ${escapeHtml(
+                                session.salle || ""
+                            )}
+                        </span>
+
+                    </div>
+
+                    `
+                ).join("")
+            }
+
+        </div>
+
+    `;
+
+
+    modal.classList.remove(
+        "hidden"
     );
 
-
-    document.body.classList.add(
-        "modal-open"
-    );
 }
 
 
 function closeFilmModal() {
 
-    const modal =
-        document.getElementById(
+    document
+        .getElementById(
             "film-modal"
+        )
+        .classList.add(
+            "hidden"
         );
 
-
-    if (!modal) {
-        return;
-    }
-
-
-    modal.classList.remove(
-        "open"
-    );
-
-
-    document.body.classList.remove(
-        "modal-open"
-    );
 }
 
 
-// ============================================================
-// PLANNING
-// ============================================================
+document.addEventListener(
+    "click",
+    event => {
+
+        if (
+            event.target.dataset.action ===
+            "close-modal"
+        ) {
+
+            closeFilmModal();
+
+        }
+
+    }
+);
+
+
+/*
+ * ============================================================
+ * PLANNING
+ * ============================================================
+ */
 
 function renderPlanning() {
 
@@ -980,214 +737,155 @@ function renderPlanning() {
         );
 
 
-    if (!container) {
-        return;
+    const empty =
+        document.getElementById(
+            "empty-planning"
+        );
+
+
+    let sessions =
+        planner.getPlanningSessions();
+
+
+    sessions =
+        planner.sortSessions(
+            sessions
+        );
+
+
+    if (
+        currentPlanningView ===
+        "combined" &&
+        !planner.isColleagueVisible()
+    ) {
+
+        sessions =
+            planner.getSelectedSessions();
+
     }
-
-
-    const days =
-        planner.getSessionsByDay();
 
 
     container.innerHTML = "";
 
 
-    // --------------------------------------------------------
-    // PLANNING VIDE
-    // --------------------------------------------------------
+    if (!sessions.length) {
 
-    if (
-        days.length === 0
-    ) {
-
-        container.innerHTML = `
-
-            <div class="empty-planning">
-
-                <div class="empty-planning-icon">
-                    +
-                </div>
-
-
-                <h3>
-                    Votre planning est vide
-                </h3>
-
-
-                <p>
-
-                    Ajoutez des films depuis
-                    le catalogue pour construire
-                    votre programme.
-
-                </p>
-
-
-                <button
-                    type="button"
-                    class="primary-button"
-                    id="go-catalogue-inner"
-                >
-
-                    Voir le catalogue
-
-                </button>
-
-            </div>
-
-        `;
-
-
-        const button =
-            document.getElementById(
-                "go-catalogue-inner"
-            );
-
-
-        if (button) {
-
-            button.addEventListener(
-                "click",
-                () =>
-                    showView(
-                        "catalogue"
-                    )
-            );
-        }
-
-
-        updateConflictAlert(
-            new Set()
+        container.classList.add(
+            "hidden"
         );
 
+        empty.classList.remove(
+            "hidden"
+        );
 
         return;
+
     }
 
 
-    // --------------------------------------------------------
-    // CONFLITS
-    // --------------------------------------------------------
+    container.classList.remove(
+        "hidden"
+    );
 
-    const conflictKeys =
-        planner.getConflictSessionKeys();
-
-
-    updateConflictAlert(
-        conflictKeys
+    empty.classList.add(
+        "hidden"
     );
 
 
-    // --------------------------------------------------------
-    // JOURS
-    // --------------------------------------------------------
+    const grouped =
+        groupSessionsByDay(
+            sessions
+        );
 
-    days.forEach(
-        day => {
 
-            const dayBlock =
+    const conflictKeys =
+        planner.getConflictSessionKeys(
+            sessions
+        );
+
+
+    Object.entries(
+        grouped
+    ).forEach(
+        ([date, daySessions]) => {
+
+            const day =
                 document.createElement(
                     "section"
                 );
 
 
-            dayBlock.className =
+            day.className =
                 "planning-day";
 
 
-            dayBlock.innerHTML = `
+            day.innerHTML = `
 
-                <div
-                    class="planning-day-header"
-                >
+                <div class="planning-day-header">
 
-                    <div>
+                    <h3>
+                        ${escapeHtml(
+                            formatDate(date)
+                        )}
+                    </h3>
 
-                        <span
-                            class="planning-day-label"
-                        >
-
-                            ${escapeHtml(
-                                day.jour ||
-                                ""
-                            )}
-
-                        </span>
-
-
-                        <h2>
-
-                            ${escapeHtml(
-                                formatDate(
-                                    day.date
-                                )
-                            )}
-
-                        </h2>
-
-                    </div>
-
-
-                    <span
-                        class="planning-day-count"
-                    >
-
-                        ${day.sessions.length}
-
-                        ${
-                            day.sessions.length > 1
-                                ? "séances"
-                                : "séance"
+                    <span>
+                        ${daySessions.length}
+                        séance${
+                            daySessions.length > 1
+                                ? "s"
+                                : ""
                         }
-
                     </span>
 
                 </div>
 
 
-                <div
-                    class="planning-sessions"
-                >
-                </div>
+                <div class="planning-sessions"></div>
 
             `;
 
 
             const sessionsContainer =
-                dayBlock.querySelector(
+                day.querySelector(
                     ".planning-sessions"
                 );
 
 
-            day.sessions.forEach(
+            daySessions.forEach(
                 session => {
 
                     sessionsContainer.appendChild(
-
                         createSessionCard(
-
                             session,
-
                             conflictKeys
-
                         )
-
                     );
+
                 }
             );
 
 
             container.appendChild(
-                dayBlock
+                day
             );
+
         }
     );
+
+
+    updateConflictAlert(
+        conflictKeys.size > 0
+    );
+
 }
 
 
-// ============================================================
-// CARTE SÉANCE
-// ============================================================
+/*
+ * ============================================================
+ * CARTE SÉANCE
+ * ============================================================
+ */
 
 function createSessionCard(
     session,
@@ -1200,43 +898,76 @@ function createSessionCard(
         );
 
 
-    card.className =
-        "planning-session";
-
-
     const key =
         planner.sessionKey(
             session
         );
 
 
-    const hasConflict =
+    const conflict =
         conflictKeys.has(
             key
         );
 
 
-    if (hasConflict) {
+    const owner =
+        session.owner ||
+        (
+            currentPlanningView ===
+            "colleague"
+                ? "colleague"
+                : "mine"
+        );
+
+
+    card.className =
+        "session-card";
+
+
+    if (conflict) {
 
         card.classList.add(
             "conflict"
         );
+
     }
 
 
-    const endTime =
+    if (owner === "colleague") {
 
-        session.heure_fin
-
-        ||
-
-        calculateEndTime(
-
-            session.heure,
-
-            session.filmDurationMinutes
-
+        card.classList.add(
+            "colleague-session"
         );
+
+    }
+
+
+    if (owner === "both") {
+
+        card.classList.add(
+            "shared-session"
+        );
+
+    }
+
+
+    const start =
+        session.heure_minutes || 0;
+
+
+    const duration =
+        session.filmDurationMinutes || 0;
+
+
+    const end =
+        planner.calculateEndTime(
+            start,
+            duration
+        );
+
+
+    const isMine =
+        owner === "mine";
 
 
     card.innerHTML = `
@@ -1244,167 +975,138 @@ function createSessionCard(
         <div class="session-time">
 
             <strong>
-
                 ${escapeHtml(
-                    session.heure ||
-                    ""
+                    session.heure
                 )}
-
             </strong>
 
-
-            ${
-                endTime
-
-                    ? `
-
-                        <span>
-
-                            →
-                            ${escapeHtml(
-                                endTime
-                            )}
-
-                        </span>
-
-                      `
-
-                    : ""
-            }
+            <span>
+                →
+                ${escapeHtml(
+                    end
+                )}
+            </span>
 
         </div>
 
 
-        <div class="session-info">
+        <div class="session-main">
 
-            <div class="session-category">
+            <div class="session-title-row">
 
-                ${escapeHtml(
-                    session.filmCategory ||
-                    ""
-                )}
-
-            </div>
-
-
-            <h3>
-
-                ${escapeHtml(
-                    session.filmTitle ||
-                    ""
-                )}
-
-            </h3>
-
-
-            <div class="session-meta">
-
-                <span>
-
+                <h4>
                     ${escapeHtml(
-                        session.salle ||
-                        ""
+                        session.filmTitle
                     )}
-
-                </span>
-
+                </h4>
 
                 ${
-                    session.filmDuration
-
+                    conflict
                         ? `
-
-                            <span>
-
-                                ${escapeHtml(
-                                    session.filmDuration
-                                )}
-
+                            <span class="conflict-badge">
+                                CONFLIT
                             </span>
+                        `
+                        : ""
+                }
 
-                          `
+                ${
+                    owner === "colleague"
+                        ? `
+                            <span class="colleague-badge">
+                                COLLÈGUE
+                            </span>
+                        `
+                        : ""
+                }
 
+                ${
+                    owner === "both"
+                        ? `
+                            <span class="shared-badge">
+                                COMMUN
+                            </span>
+                        `
                         : ""
                 }
 
             </div>
 
-        </div>
 
+            <div class="session-meta">
 
-        <div class="session-status">
+                <span>
+                    ${escapeHtml(
+                        session.salle || ""
+                    )}
+                </span>
 
-            ${
-                hasConflict
+                <span>
+                    ${escapeHtml(
+                        session.filmDurationMinutes
+                            + " min"
+                    )}
+                </span>
 
-                    ? `
-
-                        <span
-                            class="conflict-badge"
-                        >
-
-                            CONFLIT
-
-                        </span>
-
-                      `
-
-                    : ""
-            }
-
-
-            <button
-                type="button"
-                class="remove-session-button"
-                data-action="remove-session"
-            >
-
-                Retirer
-
-            </button>
+            </div>
 
         </div>
+
+
+        ${
+            isMine
+                ? `
+                    <button
+                        type="button"
+                        class="remove-session-button"
+                        data-action="remove-session"
+                    >
+                        Retirer
+                    </button>
+                `
+                : ""
+        }
 
     `;
 
 
-    // ========================================================
-    // RETIRER CETTE SÉANCE
-    // ========================================================
+    if (isMine) {
 
-    const removeButton =
-        card.querySelector(
-            '[data-action="remove-session"]'
-        );
+        card
+            .querySelector(
+                '[data-action="remove-session"]'
+            )
+            .addEventListener(
+                "click",
+                () => {
 
+                    planner.removeSession(
+                        session
+                    );
 
-    if (removeButton) {
+                    renderPlanning();
 
-        removeButton.addEventListener(
-            "click",
-            event => {
+                    updateCounters();
 
-                event.stopPropagation();
+                }
+            );
 
-
-                planner.removeSession(
-                    session
-                );
-            }
-        );
     }
 
 
     return card;
+
 }
 
 
-// ============================================================
-// ALERTE CONFLITS
-// ============================================================
+/*
+ * ============================================================
+ * CONFLITS
+ * ============================================================
+ */
 
 function updateConflictAlert(
-    conflictKeys
+    hasConflict
 ) {
 
     const alert =
@@ -1413,322 +1115,492 @@ function updateConflictAlert(
         );
 
 
-    if (!alert) {
-        return;
-    }
+    alert.classList.toggle(
+        "hidden",
+        !hasConflict
+    );
+
+}
 
 
-    const count =
-        conflictKeys.size;
+/*
+ * ============================================================
+ * COLLABORATION
+ * ============================================================
+ */
+
+function setupCollaboration() {
+
+    document
+        .getElementById(
+            "create-planning-button"
+        )
+        .addEventListener(
+            "click",
+            async () => {
+
+                const name =
+                    document
+                        .getElementById(
+                            "user-name"
+                        )
+                        .value
+                        .trim();
 
 
-    if (
-        count > 0
-    ) {
+                try {
 
-        alert.classList.remove(
-            "hidden"
-        );
+                    await planner
+                        .createSharedPlanning(
+                            name
+                        );
 
 
-        alert.innerHTML = `
+                    updateCollaborationInterface();
 
-            <strong>
+                } catch (error) {
 
-                ${count}
+                    alert(
+                        error.message ||
+                        "Impossible de créer le planning."
+                    );
 
-                ${
-                    count > 1
-                        ? "séances sont en conflit."
-                        : "séance est en conflit."
                 }
 
-            </strong>
-
-
-            <span>
-
-                Les séances concernées
-                sont signalées en rouge.
-                Vous pouvez retirer
-                individuellement une séance.
-
-            </span>
-
-        `;
-
-    } else {
-
-        alert.classList.add(
-            "hidden"
-        );
-    }
-}
-
-
-// ============================================================
-// NAVIGATION
-// ============================================================
-
-function setupNavigation() {
-
-    const catalogueButtons =
-        document.querySelectorAll(
-            '[data-view="catalogue"]'
-        );
-
-
-    const planningButtons =
-        document.querySelectorAll(
-            '[data-view="planning"]'
-        );
-
-
-    catalogueButtons.forEach(
-        button => {
-
-            button.addEventListener(
-                "click",
-                () =>
-                    showView(
-                        "catalogue"
-                    )
-            );
-        }
-    );
-
-
-    planningButtons.forEach(
-        button => {
-
-            button.addEventListener(
-                "click",
-                () =>
-                    showView(
-                        "planning"
-                    )
-            );
-        }
-    );
-}
-
-
-function setupPlanningButtons() {
-
-    const button =
-        document.getElementById(
-            "go-catalogue"
-        );
-
-
-    if (!button) {
-        return;
-    }
-
-
-    button.addEventListener(
-        "click",
-        () =>
-            showView(
-                "catalogue"
-            )
-    );
-}
-
-
-function showView(
-    view
-) {
-
-    const catalogue =
-        document.getElementById(
-            "catalogue-view"
-        );
-
-
-    const planning =
-        document.getElementById(
-            "planning-view"
-        );
-
-
-    const catalogueTabs =
-        document.querySelectorAll(
-            '[data-view="catalogue"]'
-        );
-
-
-    const planningTabs =
-        document.querySelectorAll(
-            '[data-view="planning"]'
-        );
-
-
-    if (
-        view ===
-        "catalogue"
-    ) {
-
-        if (catalogue) {
-
-            catalogue.classList.add(
-                "active"
-            );
-        }
-
-
-        if (planning) {
-
-            planning.classList.remove(
-                "active"
-            );
-        }
-
-
-        catalogueTabs.forEach(
-            button =>
-                button.classList.add(
-                    "active"
-                )
-        );
-
-
-        planningTabs.forEach(
-            button =>
-                button.classList.remove(
-                    "active"
-                )
-        );
-
-
-    } else {
-
-        if (catalogue) {
-
-            catalogue.classList.remove(
-                "active"
-            );
-        }
-
-
-        if (planning) {
-
-            planning.classList.add(
-                "active"
-            );
-        }
-
-
-        catalogueTabs.forEach(
-            button =>
-                button.classList.remove(
-                    "active"
-                )
-        );
-
-
-        planningTabs.forEach(
-            button =>
-                button.classList.add(
-                    "active"
-                )
-        );
-    }
-}
-
-
-// ============================================================
-// COMPTEURS
-// ============================================================
-
-function updateCounters() {
-
-    const selectedFilms =
-        planner.getSelectedFilms();
-
-
-    const selectedSessions =
-        planner.getSelectedSessions();
-
-
-    const filmCounter =
-        document.getElementById(
-            "selected-films-count"
-        );
-
-
-    const sessionCounter =
-        document.getElementById(
-            "selected-sessions-count"
-        );
-
-
-    if (filmCounter) {
-
-        filmCounter.textContent =
-            selectedFilms.length;
-    }
-
-
-    if (sessionCounter) {
-
-        sessionCounter.textContent =
-            selectedSessions.length;
-    }
-}
-
-
-// ============================================================
-// EFFACER
-// ============================================================
-
-function setupClearSelection() {
-
-    const button =
-        document.getElementById(
-            "clear-selection"
-        );
-
-
-    if (!button) {
-        return;
-    }
-
-
-    button.addEventListener(
-        "click",
-        () => {
-
-            if (
-                planner
-                    .getSelectedFilms()
-                    .length === 0
-            ) {
-
-                return;
             }
+        );
 
 
-            const confirmed =
-                window.confirm(
+    document
+        .getElementById(
+            "join-planning-button"
+        )
+        .addEventListener(
+            "click",
+            async () => {
 
-                    "Voulez-vous vraiment supprimer tous les films de votre planning ?"
+                const name =
+                    document
+                        .getElementById(
+                            "user-name"
+                        )
+                        .value
+                        .trim();
 
+
+                const code =
+                    document
+                        .getElementById(
+                            "planning-code"
+                        )
+                        .value
+                        .trim();
+
+
+                try {
+
+                    await planner
+                        .joinSharedPlanning(
+                            code,
+                            name
+                        );
+
+
+                    updateCollaborationInterface();
+
+                    renderPlanning();
+
+                } catch (error) {
+
+                    alert(
+                        error.message ||
+                        "Impossible de rejoindre le planning."
+                    );
+
+                }
+
+            }
+        );
+
+
+    document
+        .getElementById(
+            "toggle-colleague-visibility"
+        )
+        .addEventListener(
+            "change",
+            event => {
+
+                planner.setColleagueVisible(
+                    event.target.checked
                 );
 
 
-            if (confirmed) {
+                renderPlanning();
 
-                planner.clearSelection();
             }
-        }
-    );
+        );
+
+
+    document
+        .getElementById(
+            "show-my-planning"
+        )
+        .addEventListener(
+            "click",
+            () => {
+
+                planner.setPlanningView(
+                    "mine"
+                );
+
+                updatePlanningViewButtons();
+
+                renderPlanning();
+
+            }
+        );
+
+
+    document
+        .getElementById(
+            "show-colleague-planning"
+        )
+        .addEventListener(
+            "click",
+            () => {
+
+                planner.setPlanningView(
+                    "colleague"
+                );
+
+                updatePlanningViewButtons();
+
+                renderPlanning();
+
+            }
+        );
+
+
+    document
+        .getElementById(
+            "show-combined-planning"
+        )
+        .addEventListener(
+            "click",
+            () => {
+
+                planner.setPlanningView(
+                    "combined"
+                );
+
+                updatePlanningViewButtons();
+
+                renderPlanning();
+
+            }
+        );
+
+
+    document
+        .getElementById(
+            "leave-planning-button"
+        )
+        .addEventListener(
+            "click",
+            () => {
+
+                localStorage.removeItem(
+                    "reims-polar-2026-shared-planning"
+                );
+
+                location.reload();
+
+            }
+        );
+
 }
 
 
-// ============================================================
-// DATE
-// ============================================================
+function updateCollaborationInterface() {
+
+    const createPanel =
+        document.getElementById(
+            "collaboration-create"
+        );
+
+
+    const activePanel =
+        document.getElementById(
+            "collaboration-active"
+        );
+
+
+    const room =
+        planner.getSharedPlanning();
+
+
+    if (!room) {
+
+        createPanel.classList.remove(
+            "hidden"
+        );
+
+        activePanel.classList.add(
+            "hidden"
+        );
+
+        return;
+
+    }
+
+
+    createPanel.classList.add(
+        "hidden"
+    );
+
+    activePanel.classList.remove(
+        "hidden"
+    );
+
+
+    const user =
+        planner.getCurrentUser();
+
+
+    const colleague =
+        planner.getColleagueUser();
+
+
+    document
+        .getElementById(
+            "planning-name"
+        )
+        .textContent =
+        room.name || "Planning partagé";
+
+
+    document
+        .getElementById(
+            "planning-code-display"
+        )
+        .textContent =
+        room.code;
+
+
+    document
+        .getElementById(
+            "my-name"
+        )
+        .textContent =
+        user?.name || "Moi";
+
+
+    const colleagueElement =
+        document.getElementById(
+            "colleague-user"
+        );
+
+
+    colleagueElement.innerHTML =
+        colleague
+            ? `
+                <span class="collaborator-dot"></span>
+                <span>
+                    ${escapeHtml(
+                        colleague.name
+                    )}
+                </span>
+            `
+            : `
+                <span class="collaborator-dot"></span>
+                <span>
+                    En attente d'un collègue
+                </span>
+            `;
+
+
+    document
+        .getElementById(
+            "toggle-colleague-visibility"
+        )
+        .checked =
+        planner.isColleagueVisible();
+
+}
+
+
+function updatePlanningViewButtons() {
+
+    const buttons = {
+
+        mine:
+            document.getElementById(
+                "show-my-planning"
+            ),
+
+        colleague:
+            document.getElementById(
+                "show-colleague-planning"
+            ),
+
+        combined:
+            document.getElementById(
+                "show-combined-planning"
+            )
+
+    };
+
+
+    Object.entries(
+        buttons
+    ).forEach(
+        ([key, button]) => {
+
+            button.classList.toggle(
+                "active",
+                currentPlanningView ===
+                    key
+            );
+
+        }
+    );
+
+}
+
+
+/*
+ * ============================================================
+ * ACTIONS PLANNING
+ * ============================================================
+ */
+
+function setupPlanningActions() {
+
+    document
+        .getElementById(
+            "clear-selection-button"
+        )
+        .addEventListener(
+            "click",
+            () => {
+
+                if (
+                    !confirm(
+                        "Supprimer tout votre planning ?"
+                    )
+                ) {
+
+                    return;
+
+                }
+
+
+                festivalData.films
+                    .forEach(
+                        film => {
+
+                            planner.deselectFilm(
+                                film.id
+                            );
+
+                        }
+                    );
+
+
+                renderCatalogue();
+
+                renderPlanning();
+
+                updateCounters();
+
+            }
+        );
+
+}
+
+
+/*
+ * ============================================================
+ * COMPTEURS
+ * ============================================================
+ */
+
+function updateCounters() {
+
+    const films =
+        festivalData.films.filter(
+            film =>
+                planner.isFilmSelected(
+                    film.id
+                )
+        );
+
+
+    const sessions =
+        planner.getSelectedSessions();
+
+
+    document
+        .getElementById(
+            "selected-films-count"
+        )
+        .textContent =
+        films.length;
+
+
+    document
+        .getElementById(
+            "selected-sessions-count"
+        )
+        .textContent =
+        sessions.length;
+
+}
+
+
+/*
+ * ============================================================
+ * GROUPES
+ * ============================================================
+ */
+
+function groupSessionsByDay(
+    sessions
+) {
+
+    const grouped = {};
+
+
+    sessions.forEach(
+        session => {
+
+            if (!grouped[session.date]) {
+
+                grouped[session.date] =
+                    [];
+
+            }
+
+
+            grouped[
+                session.date
+            ].push(session);
+
+        }
+    );
+
+
+    return grouped;
+
+}
+
+
+/*
+ * ============================================================
+ * DATES
+ * ============================================================
+ */
 
 function formatDate(
     dateString
@@ -1745,171 +1617,48 @@ function formatDate(
         );
 
 
-    if (
-        Number.isNaN(
-            date.getTime()
-        )
-    ) {
-
-        return dateString;
-    }
-
-
     return date.toLocaleDateString(
         "fr-FR",
         {
-
-            weekday:
-                "long",
-
-            day:
-                "numeric",
-
-            month:
-                "long"
-
+            weekday: "long",
+            day: "numeric",
+            month: "long"
         }
     );
+
 }
 
 
-// ============================================================
-// HEURE DE FIN
-// ============================================================
+/*
+ * ============================================================
+ * HTML
+ * ============================================================
+ */
 
-function calculateEndTime(
-    startTime,
-    durationMinutes
-) {
+function escapeHtml(value) {
 
-    if (
-        !startTime ||
-        !durationMinutes
-    ) {
-
-        return "";
-    }
-
-
-    const match =
-        startTime.match(
-            /(\d{1,2})h(\d{2})?/
-        );
-
-
-    if (!match) {
-        return "";
-    }
-
-
-    const hours =
-        Number(
-            match[1]
-        );
-
-
-    const minutes =
-        Number(
-            match[2] || 0
-        );
-
-
-    const total =
-
-        hours * 60 +
-
-        minutes +
-
-        Number(
-            durationMinutes
-        );
-
-
-    const endHours =
-        Math.floor(
-            total / 60
-        ) % 24;
-
-
-    const endMinutes =
-        total % 60;
-
-
-    return (
-
-        `${String(
-            endHours
-        ).padStart(2, "0")}h` +
-
-        `${String(
-            endMinutes
-        ).padStart(2, "0")}`
-
-    );
-}
-
-
-// ============================================================
-// ESCAPE HTML
-// ============================================================
-
-function escapeHtml(
-    value
-) {
-
-    if (
-        value === null ||
-        value === undefined
-    ) {
-
-        return "";
-    }
-
-
-    return String(value)
-
+    return String(
+        value ?? ""
+    )
         .replace(
             /&/g,
             "&amp;"
         )
-
         .replace(
             /</g,
             "&lt;"
         )
-
         .replace(
             />/g,
             "&gt;"
         )
-
         .replace(
             /"/g,
             "&quot;"
         )
-
         .replace(
             /'/g,
             "&#039;"
         );
+
 }
-
-
-// ============================================================
-// API GLOBALE
-// ============================================================
-
-window.renderCatalogue =
-    renderCatalogue;
-
-
-window.renderPlanning =
-    renderPlanning;
-
-
-window.updateCounters =
-    updateCounters;
-
-
-window.showView =
-    showView;
