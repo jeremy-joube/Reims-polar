@@ -1,245 +1,202 @@
-/* =========================================================
-   REIMS POLAR — APPLICATION
-========================================================= */
-
-
 let festivalData = null;
 
-let activeCategory = "ALL";
+let currentCategory = "TOUS";
 
-let searchTerm = "";
-
-let currentModalFilm = null;
+let currentSearch = "";
 
 
-/* =========================================================
-   INITIALISATION
-========================================================= */
+// ============================================================
+// INITIALISATION
+// ============================================================
 
 document.addEventListener(
     "DOMContentLoaded",
-    init
+    async () => {
+
+        try {
+
+            const response =
+                await fetch(
+                    "./data/Reims_Polar_2026.json"
+                );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    `Erreur HTTP ${response.status}`
+                );
+            }
+
+
+            festivalData =
+                await response.json();
+
+
+            window.festivalData =
+                festivalData;
+
+
+            initializeInterface();
+
+
+        } catch (error) {
+
+            console.error(
+                "Impossible de charger les données :",
+                error
+            );
+
+
+            const catalogue =
+                document.getElementById(
+                    "film-grid"
+                );
+
+
+            if (catalogue) {
+
+                catalogue.innerHTML = `
+
+                    <div class="empty-state">
+
+                        <h3>
+                            Impossible de charger le catalogue
+                        </h3>
+
+                        <p>
+                            Vérifiez que le fichier JSON
+                            est bien présent dans
+                            <code>web/data/</code>.
+                        </p>
+
+                    </div>
+
+                `;
+            }
+        }
+    }
 );
 
 
-async function init() {
+// ============================================================
+// INITIALISATION
+// ============================================================
 
-    setupNavigation();
+function initializeInterface() {
+
+    setupCategoryFilters();
 
     setupSearch();
 
-    setupModal();
+    setupNavigation();
 
     setupPlanningButtons();
 
-    await loadData();
+    setupModal();
 
-}
-
-
-/* =========================================================
-   CHARGEMENT JSON
-========================================================= */
-
-async function loadData() {
-
-    const catalogue =
-        document.getElementById(
-            "catalogue-grid"
-        );
-
-    try {
-
-        const response =
-            await fetch(
-                "./data/Reims_Polar_2026.json"
-            );
-
-        if (!response.ok) {
-
-            throw new Error(
-                `HTTP ${response.status}`
-            );
-
-        }
-
-        festivalData =
-            await response.json();
-
-        console.log(
-            "Programme chargé :",
-            festivalData
-        );
-
-        buildCategoryFilters();
-
-        renderCatalogue();
-
-        renderPlanning();
-
-        updateCounters();
-
-    } catch (error) {
-
-        console.error(
-            "Erreur de chargement du JSON :",
-            error
-        );
-
-        catalogue.innerHTML = `
-            <div class="loading">
-                <strong>
-                    Impossible de charger le programme.
-                </strong>
-                <br><br>
-                Vérifiez que le fichier
-                <code>
-                    Reims_Polar_2026.json
-                </code>
-                est présent dans
-                <code>
-                    web/data/
-                </code>.
-            </div>
-        `;
-
-    }
-
-}
+    setupClearSelection();
 
 
-/* =========================================================
-   NAVIGATION
-========================================================= */
+    renderCatalogue();
 
-function setupNavigation() {
+    renderPlanning();
 
-    const buttons =
-        document.querySelectorAll(
-            ".nav-button"
-        );
+    updateCounters();
 
-    buttons.forEach(
-        button => {
 
-            button.addEventListener(
-                "click",
-                () => {
-
-                    const view =
-                        button.dataset.view;
-
-                    switchView(
-                        view
-                    );
-
-                }
-            );
-
-        }
+    showView(
+        "catalogue"
     );
-
 }
 
 
-function switchView(view) {
+// ============================================================
+// CATÉGORIES
+// ============================================================
 
-    document
-        .querySelectorAll(
-            ".nav-button"
-        )
-        .forEach(
-            button => {
-
-                button.classList.toggle(
-                    "active",
-                    button.dataset.view
-                    === view
-                );
-
-            }
-        );
-
-
-    document
-        .querySelectorAll(
-            ".view"
-        )
-        .forEach(
-            section => {
-
-                section.classList.toggle(
-                    "active",
-                    section.id
-                    === `${view}-view`
-                );
-
-            }
-        );
-
-
-    if (
-        view ===
-        "planning"
-    ) {
-
-        renderPlanning();
-
-    }
-
-}
-
-
-/* =========================================================
-   RECHERCHE
-========================================================= */
-
-function setupSearch() {
-
-    const input =
-        document.getElementById(
-            "search-input"
-        );
-
-    input.addEventListener(
-        "input",
-        event => {
-
-            searchTerm =
-                event.target.value
-                    .trim()
-                    .toLowerCase();
-
-            renderCatalogue();
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   CATÉGORIES
-========================================================= */
-
-function buildCategoryFilters() {
+function setupCategoryFilters() {
 
     const container =
         document.getElementById(
             "category-filters"
         );
 
-    const categories =
-        [
-            ...new Set(
-                festivalData.films
-                    .map(
-                        film =>
-                            film.categorie
-                    )
-                    .filter(Boolean)
-            )
-        ].sort();
+
+    if (!container) {
+        return;
+    }
+
+
+    container.innerHTML = "";
+
+
+    // --------------------------------------------------------
+    // TOUS
+    // --------------------------------------------------------
+
+    const allButton =
+        document.createElement(
+            "button"
+        );
+
+
+    allButton.type =
+        "button";
+
+
+    allButton.className =
+        "category-button active";
+
+
+    allButton.dataset.category =
+        "TOUS";
+
+
+    allButton.textContent =
+        "Tous";
+
+
+    allButton.addEventListener(
+        "click",
+        () => {
+
+            currentCategory =
+                "TOUS";
+
+
+            updateActiveCategoryButton();
+
+            renderCatalogue();
+        }
+    );
+
+
+    container.appendChild(
+        allButton
+    );
+
+
+    // --------------------------------------------------------
+    // CATÉGORIES
+    // --------------------------------------------------------
+
+    const categories = [
+
+        ...new Set(
+
+            festivalData.films
+
+                .map(
+                    film =>
+                        film.categorie
+                )
+
+                .filter(Boolean)
+
+        )
+
+    ].sort();
 
 
     categories.forEach(
@@ -250,125 +207,174 @@ function buildCategoryFilters() {
                     "button"
                 );
 
+
+            button.type =
+                "button";
+
+
             button.className =
                 "category-button";
+
 
             button.dataset.category =
                 category;
 
+
             button.textContent =
                 category;
+
 
             button.addEventListener(
                 "click",
                 () => {
 
-                    activeCategory =
+                    currentCategory =
                         category;
 
-                    updateCategoryButtons();
+
+                    updateActiveCategoryButton();
 
                     renderCatalogue();
-
                 }
             );
+
 
             container.appendChild(
                 button
             );
-
         }
     );
-
-
-    updateCategoryButtons();
-
 }
 
 
-function updateCategoryButtons() {
+// ============================================================
+// CATÉGORIE ACTIVE
+// ============================================================
 
-    document
-        .querySelectorAll(
+function updateActiveCategoryButton() {
+
+    const buttons =
+        document.querySelectorAll(
             ".category-button"
-        )
-        .forEach(
-            button => {
-
-                button.classList.toggle(
-                    "active",
-                    button.dataset.category
-                    === activeCategory
-                );
-
-            }
         );
 
+
+    buttons.forEach(
+        button => {
+
+            button.classList.toggle(
+
+                "active",
+
+                button.dataset.category ===
+                currentCategory
+
+            );
+        }
+    );
 }
 
 
-/* =========================================================
-   FILTRAGE
-========================================================= */
+// ============================================================
+// RECHERCHE
+// ============================================================
+
+function setupSearch() {
+
+    const input =
+        document.getElementById(
+            "film-search"
+        );
+
+
+    if (!input) {
+        return;
+    }
+
+
+    input.addEventListener(
+        "input",
+        event => {
+
+            currentSearch =
+                event.target.value
+                    .trim()
+                    .toLowerCase();
+
+
+            renderCatalogue();
+        }
+    );
+}
+
+
+// ============================================================
+// FILMS FILTRÉS
+// ============================================================
 
 function getFilteredFilms() {
 
-    if (!festivalData) {
+    if (
+        !festivalData ||
+        !festivalData.films
+    ) {
+
         return [];
     }
+
 
     return festivalData.films.filter(
         film => {
 
-            const matchesCategory =
-                activeCategory ===
-                "ALL"
+            const categoryMatch =
+
+                currentCategory ===
+                "TOUS"
+
                 ||
+
                 film.categorie ===
-                activeCategory;
+                currentCategory;
 
 
-            const matchesSearch =
-                !searchTerm
+            const searchMatch =
+
+                !currentSearch
+
                 ||
+
                 film.titre
                     .toLowerCase()
                     .includes(
-                        searchTerm
+                        currentSearch
                     );
 
 
             return (
-                matchesCategory
-                &&
-                matchesSearch
+                categoryMatch &&
+                searchMatch
             );
-
         }
     );
-
 }
 
 
-/* =========================================================
-   CATALOGUE
-========================================================= */
+// ============================================================
+// CATALOGUE
+// ============================================================
 
 function renderCatalogue() {
 
-    if (!festivalData) {
+    const grid =
+        document.getElementById(
+            "film-grid"
+        );
+
+
+    if (!grid) {
         return;
     }
 
-    const grid =
-        document.getElementById(
-            "catalogue-grid"
-        );
-
-    const noResults =
-        document.getElementById(
-            "no-results"
-        );
 
     const films =
         getFilteredFilms();
@@ -381,18 +387,26 @@ function renderCatalogue() {
         films.length === 0
     ) {
 
-        noResults.classList.remove(
-            "hidden"
-        );
+        grid.innerHTML = `
+
+            <div class="empty-state">
+
+                <h3>
+                    Aucun film trouvé
+                </h3>
+
+                <p>
+                    Essayez une autre recherche
+                    ou une autre catégorie.
+                </p>
+
+            </div>
+
+        `;
+
 
         return;
-
     }
-
-
-    noResults.classList.add(
-        "hidden"
-    );
 
 
     films.forEach(
@@ -403,34 +417,33 @@ function renderCatalogue() {
                     film
                 )
             );
-
         }
     );
-
 }
 
 
-/* =========================================================
-   CARTE FILM
-========================================================= */
+// ============================================================
+// CARTE FILM
+// ============================================================
 
 function createFilmCard(
     film
 ) {
-
-    const selected =
-        isSelected(
-            film.id
-        );
-
 
     const card =
         document.createElement(
             "article"
         );
 
+
     card.className =
         "film-card";
+
+
+    const selected =
+        planner.isSelected(
+            film.id
+        );
 
 
     if (selected) {
@@ -438,72 +451,134 @@ function createFilmCard(
         card.classList.add(
             "selected"
         );
-
     }
 
 
-    const sessionCount =
-        film.seances.length;
+    const category =
+        film.categorie || "";
+
+
+    const duration =
+        film.duree || "";
+
+
+    const sessionsCount =
+
+        Array.isArray(
+            film.seances
+        )
+
+            ? film.seances.length
+
+            : 0;
 
 
     card.innerHTML = `
 
-        <div class="film-category">
-            ${escapeHtml(
-                film.categorie
-                || "FILM"
-            )}
-        </div>
+        <div class="film-card-header">
 
+            <span class="film-category">
 
-        <h3 class="film-title">
-            ${escapeHtml(
-                film.titre
-            )}
-        </h3>
-
-
-        <div class="film-info">
-
-            <span>
                 ${escapeHtml(
-                    film.duree
-                    || "Durée inconnue"
+                    category
                 )}
+
             </span>
 
-            <span>
-                ${sessionCount}
-                séance${sessionCount > 1 ? "s" : ""}
-            </span>
+
+            ${
+                selected
+
+                    ? `
+
+                        <span
+                            class="selected-badge"
+                        >
+
+                            SÉLECTIONNÉ
+
+                        </span>
+
+                      `
+
+                    : ""
+            }
 
         </div>
 
 
-        <div class="film-actions">
+        <div class="film-card-body">
+
+            <h3 class="film-title">
+
+                ${escapeHtml(
+                    film.titre
+                )}
+
+            </h3>
+
+
+            <div class="film-meta">
+
+                ${
+                    duration
+
+                        ? `
+
+                            <span>
+
+                                ${escapeHtml(
+                                    duration
+                                )}
+
+                            </span>
+
+                          `
+
+                        : ""
+                }
+
+
+                <span>
+
+                    ${sessionsCount}
+
+                    ${
+                        sessionsCount > 1
+                            ? "séances"
+                            : "séance"
+                    }
+
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="film-card-footer">
 
             <button
-                class="film-button details-button"
+                type="button"
+                class="film-details-button"
+                data-action="details"
             >
                 Détails
             </button>
 
 
             <button
-                class="
-                    film-button
-                    selection-button
-                    ${selected
-                        ? "selected-button"
-                        : ""
-                    }
-                "
+                type="button"
+                class="film-select-button"
+                data-action="select"
             >
+
                 ${
                     selected
-                    ? "Sélectionné"
-                    : "Ajouter"
+                        ? "Retirer"
+                        : "Ajouter"
                 }
+
             </button>
 
         </div>
@@ -511,119 +586,451 @@ function createFilmCard(
     `;
 
 
-    card
-        .querySelector(
-            ".details-button"
-        )
-        .addEventListener(
-            "click",
-            () => {
-
-                openFilmModal(
-                    film
-                );
-
-            }
+    const detailsButton =
+        card.querySelector(
+            '[data-action="details"]'
         );
 
 
-    card
-        .querySelector(
-            ".selection-button"
-        )
-        .addEventListener(
-            "click",
-            () => {
+    detailsButton.addEventListener(
+        "click",
+        event => {
 
-                toggleFilm(
-                    film.id
-                );
+            event.stopPropagation();
 
-            }
+            openFilmModal(
+                film
+            );
+        }
+    );
+
+
+    const selectButton =
+        card.querySelector(
+            '[data-action="select"]'
         );
+
+
+    selectButton.addEventListener(
+        "click",
+        event => {
+
+            event.stopPropagation();
+
+            planner.toggleFilm(
+                film.id
+            );
+        }
+    );
+
+
+    card.addEventListener(
+        "click",
+        () => {
+
+            openFilmModal(
+                film
+            );
+        }
+    );
 
 
     return card;
-
 }
 
 
-/* =========================================================
-   COMPTEURS
-========================================================= */
+// ============================================================
+// MODAL
+// ============================================================
 
-function updateCounters() {
+function setupModal() {
 
-    const selectedCount =
+    const modal =
         document.getElementById(
-            "selected-count"
-        );
-
-    const sessionCount =
-        document.getElementById(
-            "session-count"
+            "film-modal"
         );
 
 
-    const films =
-        getSelectedFilms();
+    if (!modal) {
+        return;
+    }
+
+
+    const closeButtons =
+        modal.querySelectorAll(
+            "[data-close-modal]"
+        );
+
+
+    closeButtons.forEach(
+        button => {
+
+            button.addEventListener(
+                "click",
+                closeFilmModal
+            );
+        }
+    );
+
+
+    const overlay =
+        modal.querySelector(
+            ".modal-overlay"
+        );
+
+
+    if (overlay) {
+
+        overlay.addEventListener(
+            "click",
+            closeFilmModal
+        );
+    }
+}
+
+
+function openFilmModal(
+    film
+) {
+
+    const modal =
+        document.getElementById(
+            "film-modal"
+        );
+
+
+    if (!modal) {
+        return;
+    }
+
+
+    const title =
+        modal.querySelector(
+            "#modal-film-title"
+        );
+
+
+    const category =
+        modal.querySelector(
+            "#modal-film-category"
+        );
+
+
+    const duration =
+        modal.querySelector(
+            "#modal-film-duration"
+        );
 
 
     const sessions =
-        getSelectedSessions();
+        modal.querySelector(
+            "#modal-film-sessions"
+        );
 
 
-    selectedCount.textContent =
-        films.length;
+    const selectButton =
+        modal.querySelector(
+            "#modal-select-film"
+        );
 
 
-    sessionCount.textContent =
-        sessions.length;
+    if (title) {
 
+        title.textContent =
+            film.titre;
+    }
+
+
+    if (category) {
+
+        category.textContent =
+            film.categorie || "";
+    }
+
+
+    if (duration) {
+
+        duration.textContent =
+            film.duree || "";
+    }
+
+
+    // --------------------------------------------------------
+    // SÉANCES
+    // --------------------------------------------------------
+
+    if (sessions) {
+
+        sessions.innerHTML = "";
+
+
+        const filmSessions =
+            planner.sortSessions(
+                film.seances || []
+            );
+
+
+        if (
+            filmSessions.length === 0
+        ) {
+
+            sessions.innerHTML = `
+
+                <p class="empty-state">
+
+                    Aucune séance disponible.
+
+                </p>
+
+            `;
+
+        } else {
+
+            filmSessions.forEach(
+                session => {
+
+                    const item =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    item.className =
+                        "modal-session";
+
+
+                    const endTime =
+
+                        session.heure_fin
+
+                        ||
+
+                        calculateEndTime(
+
+                            session.heure,
+
+                            session.duree_minutes
+
+                            ||
+
+                            film.duree_minutes
+
+                        );
+
+
+                    item.innerHTML = `
+
+                        <div>
+
+                            <strong>
+
+                                ${escapeHtml(
+                                    formatDate(
+                                        session.date
+                                    )
+                                )}
+
+                            </strong>
+
+
+                            <span>
+
+                                ${escapeHtml(
+                                    session.jour ||
+                                    ""
+                                )}
+
+                            </span>
+
+                        </div>
+
+
+                        <div>
+
+                            <strong>
+
+                                ${escapeHtml(
+                                    session.heure ||
+                                    ""
+                                )}
+
+                            </strong>
+
+
+                            ${
+                                endTime
+
+                                    ? `
+
+                                        <span>
+
+                                            →
+                                            ${escapeHtml(
+                                                endTime
+                                            )}
+
+                                        </span>
+
+                                      `
+
+                                    : ""
+                            }
+
+                        </div>
+
+
+                        <div>
+
+                            ${escapeHtml(
+                                session.salle ||
+                                ""
+                            )}
+
+                        </div>
+
+                    `;
+
+
+                    sessions.appendChild(
+                        item
+                    );
+                }
+            );
+        }
+    }
+
+
+    if (selectButton) {
+
+        selectButton.textContent =
+
+            planner.isSelected(
+                film.id
+            )
+
+                ? "Retirer du planning"
+
+                : "Ajouter au planning";
+
+
+        selectButton.onclick = () => {
+
+            planner.toggleFilm(
+                film.id
+            );
+
+
+            selectButton.textContent =
+
+                planner.isSelected(
+                    film.id
+                )
+
+                    ? "Retirer du planning"
+
+                    : "Ajouter au planning";
+        };
+    }
+
+
+    modal.classList.add(
+        "open"
+    );
+
+
+    document.body.classList.add(
+        "modal-open"
+    );
 }
 
 
-/* =========================================================
-   PLANNING
-========================================================= */
+function closeFilmModal() {
+
+    const modal =
+        document.getElementById(
+            "film-modal"
+        );
+
+
+    if (!modal) {
+        return;
+    }
+
+
+    modal.classList.remove(
+        "open"
+    );
+
+
+    document.body.classList.remove(
+        "modal-open"
+    );
+}
+
+
+// ============================================================
+// PLANNING
+// ============================================================
 
 function renderPlanning() {
 
     const container =
         document.getElementById(
-            "planning-container"
+            "planning-content"
         );
 
-    const selected =
-        getSelectedFilms();
 
+    if (!container) {
+        return;
+    }
+
+
+    const days =
+        planner.getSessionsByDay();
+
+
+    container.innerHTML = "";
+
+
+    // --------------------------------------------------------
+    // PLANNING VIDE
+    // --------------------------------------------------------
 
     if (
-        selected.length === 0
+        days.length === 0
     ) {
 
         container.innerHTML = `
 
             <div class="empty-planning">
 
-                <div class="empty-icon">
+                <div class="empty-planning-icon">
                     +
                 </div>
+
 
                 <h3>
                     Votre planning est vide
                 </h3>
 
+
                 <p>
-                    Retournez dans le catalogue et
-                    sélectionnez vos premiers films.
+
+                    Ajoutez des films depuis
+                    le catalogue pour construire
+                    votre programme.
+
                 </p>
 
+
                 <button
+                    type="button"
                     class="primary-button"
                     id="go-catalogue-inner"
                 >
-                    Explorer le catalogue
+
+                    Voir le catalogue
+
                 </button>
 
             </div>
@@ -631,140 +1038,160 @@ function renderPlanning() {
         `;
 
 
-        document
-            .getElementById(
+        const button =
+            document.getElementById(
                 "go-catalogue-inner"
-            )
-            .addEventListener(
+            );
+
+
+        if (button) {
+
+            button.addEventListener(
                 "click",
-                () => {
-
-                    switchView(
+                () =>
+                    showView(
                         "catalogue"
-                    );
+                    )
+            );
+        }
 
+
+        updateConflictAlert(
+            new Set()
+        );
+
+
+        return;
+    }
+
+
+    // --------------------------------------------------------
+    // CONFLITS
+    // --------------------------------------------------------
+
+    const conflictKeys =
+        planner.getConflictSessionKeys();
+
+
+    updateConflictAlert(
+        conflictKeys
+    );
+
+
+    // --------------------------------------------------------
+    // JOURS
+    // --------------------------------------------------------
+
+    days.forEach(
+        day => {
+
+            const dayBlock =
+                document.createElement(
+                    "section"
+                );
+
+
+            dayBlock.className =
+                "planning-day";
+
+
+            dayBlock.innerHTML = `
+
+                <div
+                    class="planning-day-header"
+                >
+
+                    <div>
+
+                        <span
+                            class="planning-day-label"
+                        >
+
+                            ${escapeHtml(
+                                day.jour ||
+                                ""
+                            )}
+
+                        </span>
+
+
+                        <h2>
+
+                            ${escapeHtml(
+                                formatDate(
+                                    day.date
+                                )
+                            )}
+
+                        </h2>
+
+                    </div>
+
+
+                    <span
+                        class="planning-day-count"
+                    >
+
+                        ${day.sessions.length}
+
+                        ${
+                            day.sessions.length > 1
+                                ? "séances"
+                                : "séance"
+                        }
+
+                    </span>
+
+                </div>
+
+
+                <div
+                    class="planning-sessions"
+                >
+                </div>
+
+            `;
+
+
+            const sessionsContainer =
+                dayBlock.querySelector(
+                    ".planning-sessions"
+                );
+
+
+            day.sessions.forEach(
+                session => {
+
+                    sessionsContainer.appendChild(
+
+                        createSessionCard(
+
+                            session,
+
+                            conflictKeys
+
+                        )
+
+                    );
                 }
             );
 
 
-        updateConflictAlert();
-
-        return;
-
-    }
-
-
-    const grouped =
-        getSessionsByDay();
-
-
-    container.innerHTML = "";
-
-
-    Object
-        .keys(grouped)
-        .sort()
-        .forEach(
-            date => {
-
-                container.appendChild(
-                    createDaySection(
-                        date,
-                        grouped[date]
-                    )
-                );
-
-            }
-        );
-
-
-    updateConflictAlert();
-
-}
-
-
-/* =========================================================
-   JOUR
-========================================================= */
-
-function createDaySection(
-    date,
-    sessions
-) {
-
-    const section =
-        document.createElement(
-            "section"
-        );
-
-    section.className =
-        "day-section";
-
-
-    const readableDate =
-        formatDate(
-            date
-        );
-
-
-    const dayName =
-        sessions[0]?.jour
-        || "";
-
-
-    section.innerHTML = `
-
-        <div class="day-header">
-
-            <div class="day-name">
-                ${escapeHtml(
-                    dayName
-                )}
-            </div>
-
-            <div class="day-date">
-                ${readableDate}
-            </div>
-
-        </div>
-
-
-        <div class="day-sessions">
-        </div>
-
-    `;
-
-
-    const sessionsContainer =
-        section.querySelector(
-            ".day-sessions"
-        );
-
-
-    sessions.forEach(
-        session => {
-
-            sessionsContainer.appendChild(
-                createSessionCard(
-                    session
-                )
+            container.appendChild(
+                dayBlock
             );
-
         }
     );
-
-
-    return section;
-
 }
 
 
-/* =========================================================
-   SÉANCE
-========================================================= */
+// ============================================================
+// CARTE SÉANCE
+// ============================================================
 
 function createSessionCard(
-    session
+    session,
+    conflictKeys
 ) {
 
     const card =
@@ -772,22 +1199,20 @@ function createSessionCard(
             "article"
         );
 
+
     card.className =
-        "session-card";
+        "planning-session";
+
+
+    const key =
+        planner.sessionKey(
+            session
+        );
 
 
     const hasConflict =
-        detectConflicts().some(
-            conflict =>
-                (
-                    conflict.first ===
-                    session
-                )
-                ||
-                (
-                    conflict.second ===
-                    session
-                )
+        conflictKeys.has(
+            key
         );
 
 
@@ -796,516 +1221,695 @@ function createSessionCard(
         card.classList.add(
             "conflict"
         );
-
     }
+
+
+    const endTime =
+
+        session.heure_fin
+
+        ||
+
+        calculateEndTime(
+
+            session.heure,
+
+            session.filmDurationMinutes
+
+        );
 
 
     card.innerHTML = `
 
-        <button
-            class="session-remove"
-            title="Retirer le film"
-        >
-            ×
-        </button>
-
-
         <div class="session-time">
 
-            <span class="session-start">
+            <strong>
+
                 ${escapeHtml(
-                    session.heure
+                    session.heure ||
+                    ""
                 )}
-            </span>
+
+            </strong>
+
 
             ${
-                session.heure_fin
-                ?
-                `
-                <span>
-                    →
-                </span>
+                endTime
 
-                <span class="session-end">
-                    ${escapeHtml(
-                        session.heure_fin
-                    )}
-                </span>
-                `
-                :
-                ""
+                    ? `
+
+                        <span>
+
+                            →
+                            ${escapeHtml(
+                                endTime
+                            )}
+
+                        </span>
+
+                      `
+
+                    : ""
             }
 
         </div>
 
 
-        <div class="session-film">
-            ${escapeHtml(
-                session.filmTitle
-            )}
+        <div class="session-info">
+
+            <div class="session-category">
+
+                ${escapeHtml(
+                    session.filmCategory ||
+                    ""
+                )}
+
+            </div>
+
+
+            <h3>
+
+                ${escapeHtml(
+                    session.filmTitle ||
+                    ""
+                )}
+
+            </h3>
+
+
+            <div class="session-meta">
+
+                <span>
+
+                    ${escapeHtml(
+                        session.salle ||
+                        ""
+                    )}
+
+                </span>
+
+
+                ${
+                    session.filmDuration
+
+                        ? `
+
+                            <span>
+
+                                ${escapeHtml(
+                                    session.filmDuration
+                                )}
+
+                            </span>
+
+                          `
+
+                        : ""
+                }
+
+            </div>
+
         </div>
 
 
-        <div class="session-details">
-
-            <span>
-                ${escapeHtml(
-                    session.salle
-                )}
-            </span>
+        <div class="session-status">
 
             ${
-                session.duration
-                ?
-                `
-                <span>
-                    ${escapeHtml(
-                        session.duration
-                    )}
-                </span>
-                `
-                :
-                ""
+                hasConflict
+
+                    ? `
+
+                        <span
+                            class="conflict-badge"
+                        >
+
+                            CONFLIT
+
+                        </span>
+
+                      `
+
+                    : ""
             }
+
+
+            <button
+                type="button"
+                class="remove-session-button"
+                data-action="remove-session"
+            >
+
+                Retirer
+
+            </button>
 
         </div>
 
     `;
 
 
-    card
-        .querySelector(
-            ".session-remove"
-        )
-        .addEventListener(
-            "click",
-            () => {
+    // ========================================================
+    // RETIRER CETTE SÉANCE
+    // ========================================================
 
-                removeFilm(
-                    session.filmId
-                );
-
-            }
+    const removeButton =
+        card.querySelector(
+            '[data-action="remove-session"]'
         );
 
 
-    return card;
+    if (removeButton) {
 
+        removeButton.addEventListener(
+            "click",
+            event => {
+
+                event.stopPropagation();
+
+
+                planner.removeSession(
+                    session
+                );
+            }
+        );
+    }
+
+
+    return card;
 }
 
 
-/* =========================================================
-   CONFLITS
-========================================================= */
+// ============================================================
+// ALERTE CONFLITS
+// ============================================================
 
-function updateConflictAlert() {
+function updateConflictAlert(
+    conflictKeys
+) {
 
     const alert =
         document.getElementById(
             "conflict-alert"
         );
 
-    const message =
-        document.getElementById(
-            "conflict-message"
-        );
+
+    if (!alert) {
+        return;
+    }
 
 
-    const conflicts =
-        detectConflicts();
+    const count =
+        conflictKeys.size;
 
 
     if (
-        conflicts.length === 0
+        count > 0
     ) {
+
+        alert.classList.remove(
+            "hidden"
+        );
+
+
+        alert.innerHTML = `
+
+            <strong>
+
+                ${count}
+
+                ${
+                    count > 1
+                        ? "séances sont en conflit."
+                        : "séance est en conflit."
+                }
+
+            </strong>
+
+
+            <span>
+
+                Les séances concernées
+                sont signalées en rouge.
+                Vous pouvez retirer
+                individuellement une séance.
+
+            </span>
+
+        `;
+
+    } else {
 
         alert.classList.add(
             "hidden"
         );
-
-        return;
-
     }
-
-
-    alert.classList.remove(
-        "hidden"
-    );
-
-
-    message.textContent =
-        `${conflicts.length} conflit${
-            conflicts.length > 1
-                ? "s"
-                : ""
-        } détecté${
-            conflicts.length > 1
-                ? "s"
-                : ""
-        } dans votre sélection.`;
-
 }
 
 
-/* =========================================================
-   MODAL
-========================================================= */
+// ============================================================
+// NAVIGATION
+// ============================================================
 
-function setupModal() {
+function setupNavigation() {
 
-    document
-        .getElementById(
-            "close-modal"
-        )
-        .addEventListener(
-            "click",
-            closeFilmModal
+    const catalogueButtons =
+        document.querySelectorAll(
+            '[data-view="catalogue"]'
         );
 
 
-    document
-        .querySelector(
-            ".modal-backdrop"
-        )
-        .addEventListener(
-            "click",
-            closeFilmModal
+    const planningButtons =
+        document.querySelectorAll(
+            '[data-view="planning"]'
         );
 
 
-    document.addEventListener(
-        "keydown",
-        event => {
+    catalogueButtons.forEach(
+        button => {
 
-            if (
-                event.key ===
-                "Escape"
-            ) {
-
-                closeFilmModal();
-
-            }
-
-        }
-    );
-
-
-    document
-        .getElementById(
-            "modal-selection-button"
-        )
-        .addEventListener(
-            "click",
-            () => {
-
-                if (
-                    currentModalFilm
-                ) {
-
-                    toggleFilm(
-                        currentModalFilm.id
-                    );
-
-                    updateModalButton();
-
-                }
-
-            }
-        );
-
-}
-
-
-function openFilmModal(
-    film
-) {
-
-    currentModalFilm =
-        film;
-
-
-    document
-        .getElementById(
-            "modal-category"
-        )
-        .textContent =
-        film.categorie
-        || "FILM";
-
-
-    document
-        .getElementById(
-            "modal-title"
-        )
-        .textContent =
-        film.titre;
-
-
-    document
-        .getElementById(
-            "modal-duration"
-        )
-        .textContent =
-        film.duree
-        || "Durée inconnue";
-
-
-    document
-        .getElementById(
-            "modal-session-count"
-        )
-        .textContent =
-        `${film.seances.length} séance${
-            film.seances.length > 1
-                ? "s"
-                : ""
-        }`;
-
-
-    const container =
-        document.getElementById(
-            "modal-sessions"
-        );
-
-
-    container.innerHTML = "";
-
-
-    film.seances.forEach(
-        session => {
-
-            const element =
-                document.createElement(
-                    "div"
-                );
-
-            element.className =
-                "modal-session";
-
-
-            element.innerHTML = `
-
-                <div class="modal-session-left">
-
-                    <span class="modal-session-time">
-                        ${escapeHtml(
-                            session.heure
-                        )}
-                    </span>
-
-                    <span class="modal-session-date">
-                        ${formatDate(
-                            session.date
-                        )}
-                    </span>
-
-                </div>
-
-
-                <span class="modal-session-room">
-                    ${escapeHtml(
-                        session.salle
-                    )}
-                </span>
-
-            `;
-
-
-            container.appendChild(
-                element
+            button.addEventListener(
+                "click",
+                () =>
+                    showView(
+                        "catalogue"
+                    )
             );
-
         }
     );
 
 
-    updateModalButton();
+    planningButtons.forEach(
+        button => {
 
-
-    document
-        .getElementById(
-            "film-modal"
-        )
-        .classList.remove(
-            "hidden"
-        );
-
+            button.addEventListener(
+                "click",
+                () =>
+                    showView(
+                        "planning"
+                    )
+            );
+        }
+    );
 }
 
-
-function updateModalButton() {
-
-    const button =
-        document.getElementById(
-            "modal-selection-button"
-        );
-
-
-    if (
-        !currentModalFilm
-    ) {
-        return;
-    }
-
-
-    if (
-        isSelected(
-            currentModalFilm.id
-        )
-    ) {
-
-        button.textContent =
-            "Retirer de ma sélection";
-
-    } else {
-
-        button.textContent =
-            "Ajouter à ma sélection";
-
-    }
-
-}
-
-
-function closeFilmModal() {
-
-    document
-        .getElementById(
-            "film-modal"
-        )
-        .classList.add(
-            "hidden"
-        );
-
-    currentModalFilm =
-        null;
-
-}
-
-
-/* =========================================================
-   BOUTONS PLANNING
-========================================================= */
 
 function setupPlanningButtons() {
 
-    document
-        .getElementById(
-            "clear-selection"
-        )
-        .addEventListener(
-            "click",
-            () => {
-
-                if (
-                    selectedFilms.size ===
-                    0
-                ) {
-
-                    return;
-
-                }
-
-
-                const confirmed =
-                    confirm(
-                        "Voulez-vous vraiment supprimer toute votre sélection ?"
-                    );
-
-
-                if (confirmed) {
-
-                    clearSelection();
-
-                }
-
-            }
-        );
-
-
-    document
-        .getElementById(
+    const button =
+        document.getElementById(
             "go-catalogue"
-        )
-        .addEventListener(
-            "click",
-            () => {
-
-                switchView(
-                    "catalogue"
-                );
-
-            }
         );
 
+
+    if (!button) {
+        return;
+    }
+
+
+    button.addEventListener(
+        "click",
+        () =>
+            showView(
+                "catalogue"
+            )
+    );
 }
 
 
-/* =========================================================
-   FORMAT DATE
-========================================================= */
+function showView(
+    view
+) {
+
+    const catalogue =
+        document.getElementById(
+            "catalogue-view"
+        );
+
+
+    const planning =
+        document.getElementById(
+            "planning-view"
+        );
+
+
+    const catalogueTabs =
+        document.querySelectorAll(
+            '[data-view="catalogue"]'
+        );
+
+
+    const planningTabs =
+        document.querySelectorAll(
+            '[data-view="planning"]'
+        );
+
+
+    if (
+        view ===
+        "catalogue"
+    ) {
+
+        if (catalogue) {
+
+            catalogue.classList.add(
+                "active"
+            );
+        }
+
+
+        if (planning) {
+
+            planning.classList.remove(
+                "active"
+            );
+        }
+
+
+        catalogueTabs.forEach(
+            button =>
+                button.classList.add(
+                    "active"
+                )
+        );
+
+
+        planningTabs.forEach(
+            button =>
+                button.classList.remove(
+                    "active"
+                )
+        );
+
+
+    } else {
+
+        if (catalogue) {
+
+            catalogue.classList.remove(
+                "active"
+            );
+        }
+
+
+        if (planning) {
+
+            planning.classList.add(
+                "active"
+            );
+        }
+
+
+        catalogueTabs.forEach(
+            button =>
+                button.classList.remove(
+                    "active"
+                )
+        );
+
+
+        planningTabs.forEach(
+            button =>
+                button.classList.add(
+                    "active"
+                )
+        );
+    }
+}
+
+
+// ============================================================
+// COMPTEURS
+// ============================================================
+
+function updateCounters() {
+
+    const selectedFilms =
+        planner.getSelectedFilms();
+
+
+    const selectedSessions =
+        planner.getSelectedSessions();
+
+
+    const filmCounter =
+        document.getElementById(
+            "selected-films-count"
+        );
+
+
+    const sessionCounter =
+        document.getElementById(
+            "selected-sessions-count"
+        );
+
+
+    if (filmCounter) {
+
+        filmCounter.textContent =
+            selectedFilms.length;
+    }
+
+
+    if (sessionCounter) {
+
+        sessionCounter.textContent =
+            selectedSessions.length;
+    }
+}
+
+
+// ============================================================
+// EFFACER
+// ============================================================
+
+function setupClearSelection() {
+
+    const button =
+        document.getElementById(
+            "clear-selection"
+        );
+
+
+    if (!button) {
+        return;
+    }
+
+
+    button.addEventListener(
+        "click",
+        () => {
+
+            if (
+                planner
+                    .getSelectedFilms()
+                    .length === 0
+            ) {
+
+                return;
+            }
+
+
+            const confirmed =
+                window.confirm(
+
+                    "Voulez-vous vraiment supprimer tous les films de votre planning ?"
+
+                );
+
+
+            if (confirmed) {
+
+                planner.clearSelection();
+            }
+        }
+    );
+}
+
+
+// ============================================================
+// DATE
+// ============================================================
 
 function formatDate(
-    isoDate
+    dateString
 ) {
+
+    if (!dateString) {
+        return "";
+    }
+
 
     const date =
         new Date(
-            `${isoDate}T12:00:00`
+            `${dateString}T12:00:00`
         );
+
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+
+        return dateString;
+    }
 
 
     return date.toLocaleDateString(
         "fr-FR",
         {
-            day: "numeric",
-            month: "long",
-            year: "numeric"
+
+            weekday:
+                "long",
+
+            day:
+                "numeric",
+
+            month:
+                "long"
+
         }
     );
-
 }
 
 
-/* =========================================================
-   SÉCURITÉ HTML
-========================================================= */
+// ============================================================
+// HEURE DE FIN
+// ============================================================
+
+function calculateEndTime(
+    startTime,
+    durationMinutes
+) {
+
+    if (
+        !startTime ||
+        !durationMinutes
+    ) {
+
+        return "";
+    }
+
+
+    const match =
+        startTime.match(
+            /(\d{1,2})h(\d{2})?/
+        );
+
+
+    if (!match) {
+        return "";
+    }
+
+
+    const hours =
+        Number(
+            match[1]
+        );
+
+
+    const minutes =
+        Number(
+            match[2] || 0
+        );
+
+
+    const total =
+
+        hours * 60 +
+
+        minutes +
+
+        Number(
+            durationMinutes
+        );
+
+
+    const endHours =
+        Math.floor(
+            total / 60
+        ) % 24;
+
+
+    const endMinutes =
+        total % 60;
+
+
+    return (
+
+        `${String(
+            endHours
+        ).padStart(2, "0")}h` +
+
+        `${String(
+            endMinutes
+        ).padStart(2, "0")}`
+
+    );
+}
+
+
+// ============================================================
+// ESCAPE HTML
+// ============================================================
 
 function escapeHtml(
     value
 ) {
 
     if (
-        value === null
-        ||
+        value === null ||
         value === undefined
     ) {
 
         return "";
-
     }
 
 
     return String(value)
-        .replaceAll(
-            "&",
+
+        .replace(
+            /&/g,
             "&amp;"
         )
-        .replaceAll(
-            "<",
+
+        .replace(
+            /</g,
             "&lt;"
         )
-        .replaceAll(
-            ">",
+
+        .replace(
+            />/g,
             "&gt;"
         )
-        .replaceAll(
-            '"',
+
+        .replace(
+            /"/g,
             "&quot;"
         )
-        .replaceAll(
-            "'",
+
+        .replace(
+            /'/g,
             "&#039;"
         );
-
 }
+
+
+// ============================================================
+// API GLOBALE
+// ============================================================
+
+window.renderCatalogue =
+    renderCatalogue;
+
+
+window.renderPlanning =
+    renderPlanning;
+
+
+window.updateCounters =
+    updateCounters;
+
+
+window.showView =
+    showView;

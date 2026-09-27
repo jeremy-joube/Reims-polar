@@ -1,16 +1,16 @@
-/* =========================================================
-   PLANNER
-========================================================= */
-
 const STORAGE_KEY = "reims-polar-2026-selection";
+const EXCLUDED_SESSIONS_STORAGE_KEY =
+    "reims-polar-2026-excluded-sessions";
 
 
 let selectedFilms = new Set();
 
+let excludedSessions = new Set();
 
-/* =========================================================
-   CHARGEMENT
-========================================================= */
+
+// ============================================================
+// STORAGE
+// ============================================================
 
 function loadSelection() {
 
@@ -21,53 +21,126 @@ function loadSelection() {
                 STORAGE_KEY
             );
 
-        if (!saved) {
-            return;
+
+        if (saved) {
+
+            const parsed =
+                JSON.parse(saved);
+
+
+            if (Array.isArray(parsed)) {
+
+                selectedFilms =
+                    new Set(parsed);
+            }
         }
 
-        const ids =
-            JSON.parse(saved);
-
-        if (Array.isArray(ids)) {
-
-            selectedFilms =
-                new Set(ids);
-
-        }
 
     } catch (error) {
 
         console.error(
-            "Impossible de charger la sélection.",
+            "Impossible de charger la sélection :",
             error
         );
 
+        selectedFilms =
+            new Set();
     }
-
 }
 
-
-/* =========================================================
-   SAUVEGARDE
-========================================================= */
 
 function saveSelection() {
 
-    localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(
-            Array.from(
-                selectedFilms
-            )
-        )
-    );
+    try {
 
+        localStorage.setItem(
+
+            STORAGE_KEY,
+
+            JSON.stringify(
+                [...selectedFilms]
+            )
+
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Impossible de sauvegarder la sélection :",
+            error
+        );
+    }
 }
 
 
-/* =========================================================
-   AJOUT / RETRAIT
-========================================================= */
+// ============================================================
+// SÉANCES EXCLUES
+// ============================================================
+
+function loadExcludedSessions() {
+
+    try {
+
+        const saved =
+            localStorage.getItem(
+                EXCLUDED_SESSIONS_STORAGE_KEY
+            );
+
+
+        if (saved) {
+
+            const parsed =
+                JSON.parse(saved);
+
+
+            if (Array.isArray(parsed)) {
+
+                excludedSessions =
+                    new Set(parsed);
+            }
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "Impossible de charger les séances retirées :",
+            error
+        );
+
+        excludedSessions =
+            new Set();
+    }
+}
+
+
+function saveExcludedSessions() {
+
+    try {
+
+        localStorage.setItem(
+
+            EXCLUDED_SESSIONS_STORAGE_KEY,
+
+            JSON.stringify(
+                [...excludedSessions]
+            )
+
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Impossible de sauvegarder les séances retirées :",
+            error
+        );
+    }
+}
+
+
+// ============================================================
+// FILMS
+// ============================================================
 
 function toggleFilm(filmId) {
 
@@ -81,24 +154,29 @@ function toggleFilm(filmId) {
             filmId
         );
 
+        // Quand on retire complètement
+        // un film, on réinitialise aussi
+        // ses éventuelles séances exclues.
+
+        removeExcludedSessionsForFilm(
+            filmId
+        );
+
     } else {
 
         selectedFilms.add(
             filmId
         );
-
     }
+
 
     saveSelection();
 
-    updateInterface();
+    saveExcludedSessions();
 
+    updateInterface();
 }
 
-
-/* =========================================================
-   RETRAIT
-========================================================= */
 
 function removeFilm(filmId) {
 
@@ -106,191 +184,442 @@ function removeFilm(filmId) {
         filmId
     );
 
+
+    removeExcludedSessionsForFilm(
+        filmId
+    );
+
+
     saveSelection();
 
-    updateInterface();
+    saveExcludedSessions();
 
+    updateInterface();
 }
 
-
-/* =========================================================
-   VIDER
-========================================================= */
 
 function clearSelection() {
 
     selectedFilms.clear();
 
+    excludedSessions.clear();
+
+
     saveSelection();
 
-    updateInterface();
+    saveExcludedSessions();
 
+    updateInterface();
 }
 
-
-/* =========================================================
-   TEST SÉLECTION
-========================================================= */
 
 function isSelected(filmId) {
 
     return selectedFilms.has(
         filmId
     );
-
 }
 
-
-/* =========================================================
-   FILMS SÉLECTIONNÉS
-========================================================= */
 
 function getSelectedFilms() {
 
     if (
-        typeof festivalData ===
-        "undefined"
+
+        !window.festivalData ||
+
+        !Array.isArray(
+            window.festivalData.films
+        )
+
     ) {
 
         return [];
-
     }
 
-    return festivalData.films.filter(
+
+    return window.festivalData.films.filter(
+
         film =>
             selectedFilms.has(
                 film.id
             )
-    );
 
+    );
 }
 
 
-/* =========================================================
-   TOUTES LES SÉANCES
-========================================================= */
+// ============================================================
+// CLÉ UNIQUE D'UNE SÉANCE
+// ============================================================
+
+function sessionKey(session) {
+
+    return [
+
+        session.filmId || "",
+
+        session.date || "",
+
+        session.heure || "",
+
+        session.salle || ""
+
+    ].join("|");
+}
+
+
+// ============================================================
+// SÉANCE EXCLUE ?
+// ============================================================
+
+function isSessionExcluded(
+    session
+) {
+
+    return excludedSessions.has(
+        sessionKey(session)
+    );
+}
+
+
+// ============================================================
+// RETIRER UNE SÉANCE
+// ============================================================
+
+function removeSession(session) {
+
+    const key =
+        sessionKey(
+            session
+        );
+
+
+    excludedSessions.add(
+        key
+    );
+
+
+    saveExcludedSessions();
+
+    updateInterface();
+}
+
+
+// ============================================================
+// RESTAURER UNE SÉANCE
+// ============================================================
+
+function restoreSession(session) {
+
+    const key =
+        sessionKey(
+            session
+        );
+
+
+    excludedSessions.delete(
+        key
+    );
+
+
+    saveExcludedSessions();
+
+    updateInterface();
+}
+
+
+// ============================================================
+// RETIRER LES EXCLUSIONS D'UN FILM
+// ============================================================
+
+function removeExcludedSessionsForFilm(
+    filmId
+) {
+
+    const prefix =
+        `${filmId}|`;
+
+
+    excludedSessions =
+        new Set(
+
+            [...excludedSessions].filter(
+                key =>
+                    !key.startsWith(
+                        prefix
+                    )
+            )
+
+        );
+}
+
+
+// ============================================================
+// SÉANCES SÉLECTIONNÉES
+// ============================================================
 
 function getSelectedSessions() {
 
     const sessions = [];
 
+
     getSelectedFilms().forEach(
         film => {
+
+            if (
+                !Array.isArray(
+                    film.seances
+                )
+            ) {
+
+                return;
+            }
+
 
             film.seances.forEach(
                 session => {
 
-                    sessions.push({
-                        ...session,
-                        filmId: film.id,
-                        filmTitle: film.titre,
-                        category: film.categorie,
-                        duration: film.duree,
-                        durationMinutes:
-                            film.duree_minutes
-                    });
+                    const enrichedSession = {
 
+                        ...session,
+
+                        filmId:
+                            film.id,
+
+                        filmTitle:
+                            film.titre,
+
+                        filmCategory:
+                            film.categorie,
+
+                        filmDuration:
+                            film.duree,
+
+                        filmDurationMinutes:
+                            film.duree_minutes
+
+                    };
+
+
+                    // ----------------------------------------
+                    // Séance exclue ?
+                    // ----------------------------------------
+
+                    if (
+                        isSessionExcluded(
+                            enrichedSession
+                        )
+                    ) {
+
+                        return;
+                    }
+
+
+                    sessions.push(
+                        enrichedSession
+                    );
                 }
             );
-
         }
     );
 
-    return sessions;
 
+    return sessions;
 }
 
 
-/* =========================================================
-   TRI
-========================================================= */
+// ============================================================
+// TRI
+// ============================================================
 
 function sortSessions(
     sessions
 ) {
 
-    return sessions.sort(
+    return [...sessions].sort(
         (a, b) => {
 
-            const dateCompare =
-                a.date.localeCompare(
-                    b.date
-                );
+            const dateA =
+                a.date || "";
+
+
+            const dateB =
+                b.date || "";
+
 
             if (
-                dateCompare !== 0
+                dateA !==
+                dateB
             ) {
 
-                return dateCompare;
-
+                return dateA.localeCompare(
+                    dateB
+                );
             }
 
-            return (
-                a.heure_minutes
-                -
-                b.heure_minutes
-            );
 
+            const timeA =
+                Number(
+                    a.heure_minutes ||
+                    0
+                );
+
+
+            const timeB =
+                Number(
+                    b.heure_minutes ||
+                    0
+                );
+
+
+            if (
+                timeA !==
+                timeB
+            ) {
+
+                return (
+                    timeA -
+                    timeB
+                );
+            }
+
+
+            return (
+
+                a.salle ||
+                ""
+
+            ).localeCompare(
+
+                b.salle ||
+                ""
+
+            );
         }
     );
-
 }
 
 
-/* =========================================================
-   GROUPEMENT PAR JOUR
-========================================================= */
+// ============================================================
+// SÉANCES PAR JOUR
+// ============================================================
 
 function getSessionsByDay() {
-
-    const grouped = {};
 
     const sessions =
         sortSessions(
             getSelectedSessions()
         );
+
+
+    const days = {};
+
 
     sessions.forEach(
         session => {
 
             if (
-                !grouped[
+                !days[
                     session.date
                 ]
             ) {
 
-                grouped[
+                days[
                     session.date
-                ] = [];
+                ] = {
 
+                    date:
+                        session.date,
+
+                    jour:
+                        session.jour,
+
+                    sessions:
+                        []
+
+                };
             }
 
-            grouped[
+
+            days[
                 session.date
-            ].push(
+            ].sessions.push(
                 session
             );
-
         }
     );
 
-    return grouped;
 
+    return Object.values(
+        days
+    );
 }
 
 
-/* =========================================================
-   CONFLITS
-========================================================= */
+// ============================================================
+// FIN DE SÉANCE
+// ============================================================
+
+function getSessionEndMinutes(
+    session
+) {
+
+    if (
+
+        typeof
+            session.heure_fin_minutes ===
+            "number"
+
+        &&
+
+        !Number.isNaN(
+            session.heure_fin_minutes
+        )
+
+    ) {
+
+        return session.heure_fin_minutes;
+    }
+
+
+    const start =
+        Number(
+            session.heure_minutes ||
+            0
+        );
+
+
+    const duration =
+        Number(
+
+            session.filmDurationMinutes ||
+
+            session.duree_minutes ||
+
+            0
+
+        );
+
+
+    return (
+        start +
+        duration
+    );
+}
+
+
+// ============================================================
+// CONFLITS
+// ============================================================
 
 function detectConflicts() {
 
     const sessions =
-        sortSessions(
-            getSelectedSessions()
-        );
+        getSelectedSessions();
+
 
     const conflicts = [];
+
 
     for (
         let i = 0;
@@ -298,19 +627,22 @@ function detectConflicts() {
         i++
     ) {
 
-        const current =
+        const first =
             sessions[i];
 
-        if (
-            current.heure_fin_minutes
-            === null ||
-            current.heure_fin_minutes
-            === undefined
-        ) {
 
-            continue;
+        const firstStart =
+            Number(
+                first.heure_minutes ||
+                0
+            );
 
-        }
+
+        const firstEnd =
+            getSessionEndMinutes(
+                first
+            );
+
 
         for (
             let j = i + 1;
@@ -318,80 +650,173 @@ function detectConflicts() {
             j++
         ) {
 
-            const next =
+            const second =
                 sessions[j];
 
-            // On ne compare que les séances
-            // du même jour.
 
             if (
-                next.date !==
-                current.date
+                first.date !==
+                second.date
             ) {
 
-                break;
-
+                continue;
             }
 
-            if (
-                next.heure_minutes <
-                current.heure_fin_minutes
-            ) {
+
+            const secondStart =
+                Number(
+                    second.heure_minutes ||
+                    0
+                );
+
+
+            const secondEnd =
+                getSessionEndMinutes(
+                    second
+                );
+
+
+            const overlap =
+
+                firstStart <
+                secondEnd
+
+                &&
+
+                secondStart <
+                firstEnd;
+
+
+            if (overlap) {
 
                 conflicts.push({
-                    first: current,
-                    second: next
+
+                    first,
+
+                    second
+
                 });
-
             }
-
         }
-
     }
 
-    return conflicts;
 
+    return conflicts;
 }
 
 
-/* =========================================================
-   MISE À JOUR GLOBALE
-========================================================= */
+// ============================================================
+// CLÉS DES SÉANCES EN CONFLIT
+// ============================================================
+
+function getConflictSessionKeys() {
+
+    const keys =
+        new Set();
+
+
+    detectConflicts().forEach(
+        conflict => {
+
+            keys.add(
+                sessionKey(
+                    conflict.first
+                )
+            );
+
+
+            keys.add(
+                sessionKey(
+                    conflict.second
+                )
+            );
+        }
+    );
+
+
+    return keys;
+}
+
+
+// ============================================================
+// INTERFACE
+// ============================================================
 
 function updateInterface() {
 
     if (
-        typeof renderCatalogue ===
+        typeof window.renderCatalogue ===
         "function"
     ) {
 
-        renderCatalogue();
-
+        window.renderCatalogue();
     }
+
 
     if (
-        typeof renderPlanning ===
+        typeof window.renderPlanning ===
         "function"
     ) {
 
-        renderPlanning();
-
+        window.renderPlanning();
     }
+
 
     if (
-        typeof updateCounters ===
+        typeof window.updateCounters ===
         "function"
     ) {
 
-        updateCounters();
-
+        window.updateCounters();
     }
-
 }
 
 
-/* =========================================================
-   INITIALISATION
-========================================================= */
+// ============================================================
+// INITIALISATION
+// ============================================================
 
 loadSelection();
+
+loadExcludedSessions();
+
+
+// ============================================================
+// API PUBLIQUE
+// ============================================================
+
+window.planner = {
+
+    toggleFilm,
+
+    removeFilm,
+
+    clearSelection,
+
+    isSelected,
+
+    getSelectedFilms,
+
+    getSelectedSessions,
+
+    sortSessions,
+
+    getSessionsByDay,
+
+    detectConflicts,
+
+    getConflictSessionKeys,
+
+    sessionKey,
+
+    getSessionEndMinutes,
+
+    isSessionExcluded,
+
+    removeSession,
+
+    restoreSession,
+
+    updateInterface
+
+};
