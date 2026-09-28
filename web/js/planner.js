@@ -981,24 +981,34 @@ async function loadAllSharedSelections() {
  * SYNCHRONISATION
  * ============================================================
  */
-
 async function updateSharedPlanning() {
 
     if (
         !currentSharedPlanning ||
         !currentUser
     ) {
-
         return;
-
     }
 
 
     const rows = [];
 
 
+    /*
+     * ============================================================
+     * SÉANCES SÉLECTIONNÉES
+     * ============================================================
+     *
+     * Une ligne est créée pour chaque séance réellement
+     * sélectionnée.
+     */
+
+    const selectedSessions =
+        getSelectedSessions();
+
+
     for (
-        const filmId of selectedFilms
+        const session of selectedSessions
     ) {
 
         rows.push({
@@ -1007,7 +1017,7 @@ async function updateSharedPlanning() {
                 currentUser.id,
 
             film_id:
-                filmId,
+                session.filmId,
 
             selected:
                 true,
@@ -1016,12 +1026,18 @@ async function updateSharedPlanning() {
                 false,
 
             session_key:
-                null
+                sessionKey(session)
 
         });
 
     }
 
+
+    /*
+     * ============================================================
+     * SÉANCES EXCLUES MANUELLEMENT
+     * ============================================================
+     */
 
     for (
         const sessionKeyValue
@@ -1055,7 +1071,9 @@ async function updateSharedPlanning() {
 
 
     /*
-     * Supprimer les anciennes sélections
+     * ============================================================
+     * SUPPRESSION DES ANCIENNES SÉLECTIONS
+     * ============================================================
      */
 
     const {
@@ -1073,6 +1091,7 @@ async function updateSharedPlanning() {
     if (deleteError) {
 
         console.error(
+            "Erreur lors de la suppression des anciennes sélections :",
             deleteError
         );
 
@@ -1081,10 +1100,14 @@ async function updateSharedPlanning() {
     }
 
 
+    /*
+     * ============================================================
+     * INSERTION DES NOUVELLES SÉLECTIONS
+     * ============================================================
+     */
+
     if (!rows.length) {
-
         return;
-
     }
 
 
@@ -1099,13 +1122,13 @@ async function updateSharedPlanning() {
     if (insertError) {
 
         console.error(
+            "Erreur lors de l'enregistrement du planning partagé :",
             insertError
         );
 
     }
 
 }
-
 
 /*
  * ============================================================
